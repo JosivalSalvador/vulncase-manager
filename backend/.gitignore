@@ -1,0 +1,13 @@
+# Logs
+logs/*
+!logs/.gitkeep
+
+node_modules
+# Keep environment variables out of version control
+.env
+
+# Build folders
+dist/
+build/
+
+/src/generated/prisma
