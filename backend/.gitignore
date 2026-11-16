@@ -11,3 +11,7 @@ dist/
 build/
 
 /src/generated/prisma
+
+# Test reports
+.vitest/
+coverage/

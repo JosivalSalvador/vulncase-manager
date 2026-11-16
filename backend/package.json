@@ -13,7 +13,7 @@
     "lint:fix": "eslint --fix src/",
     "format": "prettier --write src/",
     "format:check": "prettier src/ --check",
-    "test": "vitest run --reporter=html --coverage"
+    "test": "vitest run --reporter=default --reporter=html --coverage"
   },
   "repository": {
     "type": "git",
