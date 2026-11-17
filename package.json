@@ -1,8 +1,8 @@
 {
-  "name": "trabalhofinalcyber",
+  "name": "vulncase-manager",
   "version": "1.0.0",
+  "private": true,
   "description": "",
-  "main": "index.js",
   "type": "module",
   "scripts": {
     "prepare": "husky"
