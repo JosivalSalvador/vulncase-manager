@@ -1,0 +1,27 @@
+{
+  "name": "trabalhofinalcyber",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JosivalSalvador/vulncase-manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JosivalSalvador/vulncase-manager/issues"
+  },
+  "homepage": "https://github.com/JosivalSalvador/vulncase-manager#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.1"
+  }
+}
