@@ -1,7 +1,10 @@
 node_modules
 .git
-.env
+.env*
+!.env.example
 coverage
+html
 dist
 Dockerfile
-docker-compose.yml
+compose.yaml
+*.md
