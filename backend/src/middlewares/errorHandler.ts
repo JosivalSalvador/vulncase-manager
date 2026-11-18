@@ -1,4 +1,15 @@
 import type { NextFunction, Request, Response } from "express"
+import { ZodError } from "zod"
+
+import { AppError, type ErrorDetail } from "../utils/AppError.js"
+
+function getStringProp(err: unknown, key: string): string | undefined {
+  if (typeof err === "object" && err !== null && key in err) {
+    const value = (err as Record<string, unknown>)[key]
+    return typeof value === "string" ? value : undefined
+  }
+  return undefined
+}
 
 export function errorHandler(
   err: unknown,
@@ -8,6 +19,42 @@ export function errorHandler(
 ): void {
   if (res.headersSent) {
     next(err)
+    return
+  }
+
+  // Erro nosso, lançado de propósito (ex.: 401, 403, 404, 409).
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({
+      error: err.message,
+      ...(err.details && { details: err.details }),
+    })
+    return
+  }
+
+  // Erro de validação do zod: devolve campo + mensagem, sem o valor enviado.
+  if (err instanceof ZodError) {
+    const details: ErrorDetail[] = err.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+    }))
+    res.status(400).json({ error: "Dados inválidos", details })
+    return
+  }
+
+  // Token CSRF ausente ou inválido (vem do csrf-csrf).
+  if (getStringProp(err, "code") === "EBADCSRFTOKEN") {
+    res.status(403).json({ error: "Token CSRF inválido ou ausente" })
+    return
+  }
+
+  // Erros do parser de JSON do Express (antes davam 500).
+  const type = getStringProp(err, "type")
+  if (type === "entity.parse.failed") {
+    res.status(400).json({ error: "JSON inválido" })
+    return
+  }
+  if (type === "entity.too.large") {
+    res.status(413).json({ error: "Corpo da requisição grande demais" })
     return
   }
 
