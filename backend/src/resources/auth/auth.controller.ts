@@ -1,11 +1,11 @@
 import type { Request, Response } from "express"
 
+import { getAuthUser } from "../../middlewares/requireAuth.js"
 import {
   SESSION_COOKIE_NAME,
   sessionCookieOptions,
 } from "../../middlewares/session.js"
-import { AppError } from "../../utils/AppError.js"
-import { getMeService, loginService, registerService } from "./auth.service.js"
+import { loginService, registerService } from "./auth.service.js"
 import type { LoginInput, RegisterInput } from "./auth.types.js"
 
 function regenerateSession(req: Request): Promise<void> {
@@ -52,11 +52,6 @@ export async function logout(req: Request, res: Response): Promise<void> {
   res.status(204).end()
 }
 
-export async function me(req: Request, res: Response): Promise<void> {
-  const userId = req.session.userId
-  if (!userId) {
-    throw new AppError(401, "Não autenticado")
-  }
-
-  res.json(await getMeService(userId))
+export function me(req: Request, res: Response): void {
+  res.json(getAuthUser(req))
 }
