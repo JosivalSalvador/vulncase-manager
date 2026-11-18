@@ -21,4 +21,7 @@ export const env = cleanEnv(process.env, {
     devDefault: "dev-only-secret-nao-use-em-producao-0123456789",
   }),
   COOKIE_SECURE: bool({ default: true, devDefault: false }),
+  CSRF_SECRET: secret({
+    devDefault: "dev-only-csrf-nao-use-em-producao-abcdefghijk",
+  }),
 })
