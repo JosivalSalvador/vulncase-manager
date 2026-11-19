@@ -4,6 +4,7 @@ import { requireAuth } from "../../middlewares/requireAuth.js"
 import { requireProjectAccess } from "../../middlewares/requireProjectAccess.js"
 import { requireRole } from "../../middlewares/requireRole.js"
 import { validate } from "../../middlewares/validate.js"
+import assetsRouter from "../assets/assets.router.js"
 import {
   createProject,
   deleteProject,
@@ -53,6 +54,14 @@ projectsRouter.delete(
   requireProjectAccess,
   canWrite,
   deleteProject,
+)
+
+// Ativos do projeto: /projects/:projectId/assets
+projectsRouter.use(
+  "/:projectId/assets",
+  params,
+  requireProjectAccess,
+  assetsRouter,
 )
 
 export default projectsRouter
