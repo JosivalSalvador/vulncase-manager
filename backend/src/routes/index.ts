@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express"
 
 import { generateCsrfToken } from "../middlewares/csrf.js"
 import authRouter from "../resources/auth/auth.router.js"
+import projectsRouter from "../resources/projects/projects.router.js"
 
 export const routes: Router = Router()
 
@@ -14,3 +15,4 @@ routes.get("/csrf-token", (req: Request, res: Response): void => {
 })
 
 routes.use("/auth", authRouter)
+routes.use("/projects", projectsRouter)
