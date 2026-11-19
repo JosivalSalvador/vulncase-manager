@@ -5,6 +5,7 @@ import { requireProjectAccess } from "../../middlewares/requireProjectAccess.js"
 import { requireRole } from "../../middlewares/requireRole.js"
 import { validate } from "../../middlewares/validate.js"
 import assetsRouter from "../assets/assets.router.js"
+import membersRouter from "../members/members.router.js"
 import {
   createProject,
   deleteProject,
@@ -62,6 +63,14 @@ projectsRouter.use(
   params,
   requireProjectAccess,
   assetsRouter,
+)
+
+// Membros do projeto: /projects/:projectId/members
+projectsRouter.use(
+  "/:projectId/members",
+  params,
+  requireProjectAccess,
+  membersRouter,
 )
 
 export default projectsRouter
