@@ -47,6 +47,24 @@ export function errorHandler(
     return
   }
 
+  // Erros do multer (upload): tamanho, quantidade de arquivos, campo errado.
+  if (getStringProp(err, "name") === "MulterError") {
+    if (getStringProp(err, "code") === "LIMIT_FILE_SIZE") {
+      res.status(413).json({ error: "Arquivo grande demais (limite: 5 MB)" })
+      return
+    }
+    res.status(400).json({
+      error: 'Upload inválido: envie um único arquivo no campo "file"',
+    })
+    return
+  }
+
+  // O registro existe, mas o arquivo sumiu do disco.
+  if (getStringProp(err, "code") === "ENOENT") {
+    res.status(404).json({ error: "Arquivo não encontrado" })
+    return
+  }
+
   // Prisma: registro não encontrado (ex.: apagado por outra requisição).
   if (getStringProp(err, "code") === "P2025") {
     res.status(404).json({ error: "Registro não encontrado" })

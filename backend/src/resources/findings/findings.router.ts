@@ -2,6 +2,7 @@ import { Router } from "express"
 
 import { requireRole } from "../../middlewares/requireRole.js"
 import { validate } from "../../middlewares/validate.js"
+import evidenceRouter from "../evidence/evidence.router.js"
 import {
   changeFindingStatus,
   createFinding,
@@ -60,5 +61,8 @@ findingsRouter.get(
   validate({ query: listHistoryQuerySchema }),
   listFindingHistory,
 )
+
+// Evidências do achado: /projects/:projectId/findings/:findingId/evidence
+findingsRouter.use("/:findingId/evidence", params, evidenceRouter)
 
 export default findingsRouter

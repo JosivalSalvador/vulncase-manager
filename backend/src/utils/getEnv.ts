@@ -24,4 +24,5 @@ export const env = cleanEnv(process.env, {
   CSRF_SECRET: secret({
     devDefault: "dev-only-csrf-nao-use-em-producao-abcdefghijk",
   }),
+  UPLOAD_DIR: str({ default: "uploads" }),
 })
