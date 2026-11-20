@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 // Normaliza (tira espaços e põe em minúsculas) ANTES de validar o formato.
-const emailSchema = z.string().trim().toLowerCase().pipe(z.email())
+export const emailSchema = z.string().trim().toLowerCase().pipe(z.email())
 
 export const registerSchema = z.object({
   fullname: z.string().trim().min(2).max(100),

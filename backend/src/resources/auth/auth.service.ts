@@ -4,6 +4,7 @@ import type { User } from "../../generated/prisma/client.js"
 import { prisma } from "../../lib/prisma.js"
 import { AppError } from "../../utils/AppError.js"
 import type { LoginInput, PublicUser, RegisterInput } from "./auth.types.js"
+import { isUniqueConstraintError } from "../../utils/prismaErrors.js"
 
 const BCRYPT_ROUNDS = 12
 
@@ -16,15 +17,6 @@ function toPublicUser(user: User): PublicUser {
     fullname: user.fullname,
     role: user.role,
   }
-}
-
-function isUniqueConstraintError(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === "P2002"
-  )
 }
 
 export async function registerService(

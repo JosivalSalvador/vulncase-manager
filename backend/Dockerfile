@@ -24,7 +24,6 @@ RUN npx prisma generate
 EXPOSE 3333
 CMD ["npm", "start"]
 
-# Último stage: é o que "docker build" gera quando não se passa --target.
 FROM node:24-alpine3.23 AS production
 WORKDIR /app
 ENV NODE_ENV=production

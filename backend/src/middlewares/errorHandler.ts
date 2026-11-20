@@ -47,6 +47,12 @@ export function errorHandler(
     return
   }
 
+  // Prisma: registro não encontrado (ex.: apagado por outra requisição).
+  if (getStringProp(err, "code") === "P2025") {
+    res.status(404).json({ error: "Registro não encontrado" })
+    return
+  }
+
   // Erros do parser de JSON do Express (antes davam 500).
   const type = getStringProp(err, "type")
   if (type === "entity.parse.failed") {
