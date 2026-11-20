@@ -6,6 +6,7 @@ import { requireRole } from "../../middlewares/requireRole.js"
 import { validate } from "../../middlewares/validate.js"
 import assetsRouter from "../assets/assets.router.js"
 import membersRouter from "../members/members.router.js"
+import findingsRouter from "../findings/findings.router.js"
 import {
   createProject,
   deleteProject,
@@ -71,6 +72,14 @@ projectsRouter.use(
   params,
   requireProjectAccess,
   membersRouter,
+)
+
+// Achados do projeto: /projects/:projectId/findings
+projectsRouter.use(
+  "/:projectId/findings",
+  params,
+  requireProjectAccess,
+  findingsRouter,
 )
 
 export default projectsRouter
