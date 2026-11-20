@@ -3,10 +3,13 @@ import { AppError, type ErrorDetail } from "../../utils/AppError.js"
 import { omitUndefined } from "../../utils/omitUndefined.js"
 import { getSkip, toPaginated } from "../../utils/pagination.js"
 import type { PublicUser } from "../auth/auth.types.js"
+import { assertTransitionAllowed } from "./findings.transitions.js"
 import { getProjectService } from "../projects/projects.service.js"
 import type {
+  ChangeStatusInput,
   CreateFindingInput,
   ListFindingsQuery,
+  ListHistoryQuery,
   UpdateFindingInput,
 } from "./findings.types.js"
 
@@ -15,6 +18,11 @@ const findingInclude = {
   asset: { select: { id: true, name: true, type: true } },
   assignee: { select: { id: true, fullname: true } },
   reporter: { select: { id: true, fullname: true } },
+} as const
+
+// Quem fez a mudança de status, para mostrar no histórico.
+const historyInclude = {
+  changedBy: { select: { id: true, fullname: true } },
 } as const
 
 // O ativo e o responsável precisam pertencer ao MESMO projeto do achado.
@@ -174,4 +182,70 @@ export async function deleteFindingService(
   }
 
   await prisma.finding.delete({ where: { id: findingId, projectId } })
+}
+
+export async function changeFindingStatusService(
+  user: PublicUser,
+  projectId: string,
+  findingId: string,
+  input: ChangeStatusInput,
+) {
+  const finding = await getFindingService(projectId, findingId)
+  const from = finding.status
+  const to = input.status
+
+  assertTransitionAllowed(from, to)
+
+  // Muda o status e grava o histórico juntos: ou os dois acontecem, ou nenhum.
+  await prisma.$transaction(async (tx) => {
+    // O "status: from" no where evita corrida: se outra pessoa mudou o status
+    // depois da nossa leitura, nenhuma linha é atualizada e abortamos.
+    const updated = await tx.finding.updateMany({
+      where: { id: findingId, projectId, status: from },
+      data: { status: to },
+    })
+    if (updated.count === 0) {
+      throw new AppError(
+        409,
+        "O status do achado mudou enquanto você editava. Atualize e tente de novo",
+      )
+    }
+
+    await tx.statusHistory.create({
+      data: {
+        findingId,
+        changedById: user.id,
+        fromStatus: from,
+        toStatus: to,
+      },
+    })
+  })
+
+  return getFindingService(projectId, findingId)
+}
+
+export async function listFindingHistoryService(
+  projectId: string,
+  findingId: string,
+  query: ListHistoryQuery,
+) {
+  const { page, pageSize } = query
+
+  // Garante que o achado é DESTE projeto antes de mostrar o histórico dele.
+  await getFindingService(projectId, findingId)
+
+  const where = { findingId }
+
+  const [history, total] = await prisma.$transaction([
+    prisma.statusHistory.findMany({
+      where,
+      include: historyInclude,
+      orderBy: { createdAt: "asc" },
+      skip: getSkip(page, pageSize),
+      take: pageSize,
+    }),
+    prisma.statusHistory.count({ where }),
+  ])
+
+  return toPaginated(history, total, page, pageSize)
 }

@@ -2,16 +2,20 @@ import type { Request, Response } from "express"
 
 import { getAuthUser } from "../../middlewares/requireAuth.js"
 import {
+  changeFindingStatusService,
   createFindingService,
   deleteFindingService,
   getFindingService,
+  listFindingHistoryService,
   listFindingsService,
   updateFindingService,
 } from "./findings.service.js"
 import type {
+  ChangeStatusInput,
   CreateFindingInput,
   FindingParams,
   ListFindingsQuery,
+  ListHistoryQuery,
   UpdateFindingInput,
 } from "./findings.types.js"
 
@@ -64,4 +68,31 @@ export async function deleteFinding(
   const { projectId, findingId } = req.params as FindingParams
   await deleteFindingService(getAuthUser(req), projectId, findingId)
   res.status(204).end()
+}
+
+export async function changeFindingStatus(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { projectId, findingId } = req.params as FindingParams
+  const finding = await changeFindingStatusService(
+    getAuthUser(req),
+    projectId,
+    findingId,
+    req.body as ChangeStatusInput,
+  )
+  res.json(finding)
+}
+
+export async function listFindingHistory(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { projectId, findingId } = req.params as FindingParams
+  const result = await listFindingHistoryService(
+    projectId,
+    findingId,
+    req.query as unknown as ListHistoryQuery,
+  )
+  res.json(result)
 }

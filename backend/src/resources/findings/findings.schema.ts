@@ -94,3 +94,9 @@ export const updateFindingSchema = z
   .refine((data) => Object.keys(data).length > 0, {
     message: "Informe ao menos um campo para atualizar",
   })
+
+export const changeStatusSchema = z.object({
+  status: findingStatusSchema,
+})
+
+export const listHistoryQuerySchema = paginationSchema

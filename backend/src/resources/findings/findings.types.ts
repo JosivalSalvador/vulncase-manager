@@ -1,9 +1,12 @@
 import type { z } from "zod"
 
 import type {
+  changeStatusSchema,
   createFindingSchema,
   findingParamsSchema,
+  findingStatusSchema,
   listFindingsQuerySchema,
+  listHistoryQuerySchema,
   updateFindingSchema,
 } from "./findings.schema.js"
 
@@ -14,3 +17,9 @@ export type ListFindingsQuery = z.infer<typeof listFindingsQuerySchema>
 export type CreateFindingInput = z.infer<typeof createFindingSchema>
 
 export type UpdateFindingInput = z.infer<typeof updateFindingSchema>
+
+export type FindingStatus = z.infer<typeof findingStatusSchema>
+
+export type ChangeStatusInput = z.infer<typeof changeStatusSchema>
+
+export type ListHistoryQuery = z.infer<typeof listHistoryQuerySchema>
