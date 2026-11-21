@@ -7,6 +7,7 @@ import { validate } from "../../middlewares/validate.js"
 import assetsRouter from "../assets/assets.router.js"
 import membersRouter from "../members/members.router.js"
 import findingsRouter from "../findings/findings.router.js"
+import { projectStatsRouter } from "../stats/stats.router.js"
 import {
   createProject,
   deleteProject,
@@ -80,6 +81,14 @@ projectsRouter.use(
   params,
   requireProjectAccess,
   findingsRouter,
+)
+
+// Números do projeto: /projects/:projectId/stats
+projectsRouter.use(
+  "/:projectId/stats",
+  params,
+  requireProjectAccess,
+  projectStatsRouter,
 )
 
 export default projectsRouter

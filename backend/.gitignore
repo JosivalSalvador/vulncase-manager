@@ -15,3 +15,6 @@ build/
 # Test reports
 .vitest/
 coverage/
+
+
+uploads/

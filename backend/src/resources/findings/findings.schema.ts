@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import { paginationSchema } from "../../utils/pagination.js"
+import { owaspCodes } from "../catalog/catalog.data.js"
 
 export const severitySchema = z.enum([
   "CRITICAL",
@@ -23,12 +24,17 @@ const titleSchema = z.string().trim().min(3).max(200)
 const descriptionSchema = z.string().trim().min(10).max(10000)
 const remediationSchema = z.string().trim().min(1).max(10000)
 
-// Ex.: "A03:2021". Aceita minúscula e normaliza para maiúscula.
+// Ex.: "A03:2021". Só aceita categorias que existem no catálogo (2021 e 2025),
+// e normaliza minúsculas para maiúsculas.
 const owaspSchema = z
   .string()
   .trim()
   .toUpperCase()
-  .regex(/^A(0[1-9]|10):20\d{2}$/, "Use o formato A03:2021")
+  .pipe(
+    z.enum(owaspCodes, {
+      error: "Categoria OWASP inválida. Consulte GET /catalog/owasp",
+    }),
+  )
 
 // Ex.: "CWE-89"
 const cweSchema = z
@@ -58,6 +64,14 @@ export const listFindingsQuerySchema = paginationSchema.extend({
   assigneeId: z.uuid().optional(),
   assetId: z.uuid().optional(),
   search: z.string().trim().max(100).optional(),
+  // overdue=true: só os vencidos. "false" significa apenas "sem este filtro".
+  // (z.coerce.boolean() não serve: transformaria "false" em true.)
+  overdue: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
+  // staleDays=30: só os abertos há mais de 30 dias.
+  staleDays: z.coerce.number().int().min(1).max(365).optional(),
 })
 
 // Campos como status, reporterId e projectId NÃO entram aqui de propósito:
@@ -94,3 +108,9 @@ export const updateFindingSchema = z
   .refine((data) => Object.keys(data).length > 0, {
     message: "Informe ao menos um campo para atualizar",
   })
+
+export const changeStatusSchema = z.object({
+  status: findingStatusSchema,
+})
+
+export const listHistoryQuerySchema = paginationSchema
