@@ -10,6 +10,10 @@ export const allowedTransitions: Record<FindingStatus, FindingStatus[]> = {
   FALSE_POSITIVE: ["OPEN"],
 }
 
+// Achados que ainda exigem trabalho. É a base das contagens de "abertos",
+// "vencidos" e "parados": FIXED já foi corrigido e aguarda só a verificação.
+export const OPEN_STATUSES: FindingStatus[] = ["OPEN", "IN_PROGRESS"]
+
 export function assertTransitionAllowed(
   from: FindingStatus,
   to: FindingStatus,
