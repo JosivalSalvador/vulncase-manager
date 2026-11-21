@@ -1,10 +1,14 @@
 import { prisma } from "../../lib/prisma.js"
 import { removeFiles } from "../../lib/storage.js"
 import { AppError, type ErrorDetail } from "../../utils/AppError.js"
+import { daysAgo, startOfTodayUtc } from "../../utils/dates.js"
 import { omitUndefined } from "../../utils/omitUndefined.js"
 import { getSkip, toPaginated } from "../../utils/pagination.js"
 import type { PublicUser } from "../auth/auth.types.js"
-import { assertTransitionAllowed } from "./findings.transitions.js"
+import {
+  assertTransitionAllowed,
+  OPEN_STATUSES,
+} from "./findings.transitions.js"
 import { getProjectService } from "../projects/projects.service.js"
 import type {
   ChangeStatusInput,
@@ -103,8 +107,17 @@ export async function listFindingsService(
   projectId: string,
   query: ListFindingsQuery,
 ) {
-  const { page, pageSize, severity, status, assigneeId, assetId, search } =
-    query
+  const {
+    page,
+    pageSize,
+    severity,
+    status,
+    assigneeId,
+    assetId,
+    search,
+    overdue,
+    staleDays,
+  } = query
 
   const where = {
     projectId,
@@ -113,6 +126,17 @@ export async function listFindingsService(
     ...(assigneeId ? { assigneeId } : {}),
     ...(assetId ? { assetId } : {}),
     ...(search ? { title: { contains: search } } : {}),
+    // "Vencido" e "parado" valem só para achados abertos, a mesma definição
+    // usada nas estatísticas. O AND combina com o filtro de status, se houver.
+    ...(overdue || staleDays
+      ? {
+          AND: [
+            { status: { in: OPEN_STATUSES } },
+            ...(overdue ? [{ dueDate: { lt: startOfTodayUtc() } }] : []),
+            ...(staleDays ? [{ createdAt: { lt: daysAgo(staleDays) } }] : []),
+          ],
+        }
+      : {}),
   }
 
   const [findings, total] = await prisma.$transaction([

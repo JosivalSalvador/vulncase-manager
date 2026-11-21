@@ -58,6 +58,14 @@ export const listFindingsQuerySchema = paginationSchema.extend({
   assigneeId: z.uuid().optional(),
   assetId: z.uuid().optional(),
   search: z.string().trim().max(100).optional(),
+  // overdue=true: só os vencidos. "false" significa apenas "sem este filtro".
+  // (z.coerce.boolean() não serve: transformaria "false" em true.)
+  overdue: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
+  // staleDays=30: só os abertos há mais de 30 dias.
+  staleDays: z.coerce.number().int().min(1).max(365).optional(),
 })
 
 // Campos como status, reporterId e projectId NÃO entram aqui de propósito:
