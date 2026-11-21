@@ -4,6 +4,7 @@ import { uploadRoot } from "../../lib/storage.js"
 import { getAuthUser } from "../../middlewares/requireAuth.js"
 import type { FindingParams } from "../findings/findings.types.js"
 import {
+  deleteEvidenceService,
   getEvidenceFileService,
   listEvidenceService,
   uploadEvidenceService,
@@ -64,4 +65,18 @@ export async function downloadEvidence(
     }
     throw error
   }
+}
+
+export async function deleteEvidence(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { projectId, findingId, evidenceId } = req.params as EvidenceParams
+  await deleteEvidenceService(
+    getAuthUser(req),
+    projectId,
+    findingId,
+    evidenceId,
+  )
+  res.status(204).end()
 }

@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma.js"
+import { removeFiles } from "../../lib/storage.js"
 import { AppError, type ErrorDetail } from "../../utils/AppError.js"
 import { omitUndefined } from "../../utils/omitUndefined.js"
 import { getSkip, toPaginated } from "../../utils/pagination.js"
@@ -181,7 +182,15 @@ export async function deleteFindingService(
     )
   }
 
+  // Guarda os nomes dos arquivos antes: o banco apaga as evidências em cascata,
+  // e os arquivos no disco precisam ser removidos por nós.
+  const evidence = await prisma.evidence.findMany({
+    where: { findingId },
+    select: { storedName: true },
+  })
+
   await prisma.finding.delete({ where: { id: findingId, projectId } })
+  await removeFiles(evidence.map((item) => item.storedName))
 }
 
 export async function changeFindingStatusService(

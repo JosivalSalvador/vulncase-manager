@@ -1,5 +1,6 @@
 import type { Project } from "../../generated/prisma/client.js"
 import { prisma } from "../../lib/prisma.js"
+import { removeFiles } from "../../lib/storage.js"
 import { AppError } from "../../utils/AppError.js"
 import { omitUndefined } from "../../utils/omitUndefined.js"
 import { getSkip, toPaginated, type Paginated } from "../../utils/pagination.js"
@@ -81,5 +82,13 @@ export async function deleteProjectService(
     throw new AppError(403, "Só o dono do projeto pode excluí-lo")
   }
 
+  // Guarda os nomes dos arquivos antes: o banco apaga tudo em cascata, e os
+  // arquivos de todas as evidências do projeto precisam sair do disco.
+  const evidence = await prisma.evidence.findMany({
+    where: { finding: { projectId } },
+    select: { storedName: true },
+  })
+
   await prisma.project.delete({ where: { id: projectId } })
+  await removeFiles(evidence.map((item) => item.storedName))
 }

@@ -3,6 +3,7 @@ import { Router } from "express"
 import { requireRole } from "../../middlewares/requireRole.js"
 import { validate } from "../../middlewares/validate.js"
 import {
+  deleteEvidence,
   downloadEvidence,
   listEvidence,
   uploadEvidence,
@@ -22,6 +23,13 @@ evidenceRouter.get(
   "/:evidenceId/download",
   validate({ params: evidenceParamsSchema }),
   downloadEvidence,
+)
+
+evidenceRouter.delete(
+  "/:evidenceId",
+  canWrite,
+  validate({ params: evidenceParamsSchema }),
+  deleteEvidence,
 )
 
 export default evidenceRouter

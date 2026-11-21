@@ -5,6 +5,7 @@ import { removeFiles, saveFile } from "../../lib/storage.js"
 import { AppError } from "../../utils/AppError.js"
 import type { PublicUser } from "../auth/auth.types.js"
 import { getFindingService } from "../findings/findings.service.js"
+import { getProjectService } from "../projects/projects.service.js"
 import { detectAllowedFileType } from "./evidence.detect.js"
 
 const MAX_EVIDENCE_PER_FINDING = 10
@@ -112,4 +113,38 @@ export async function getEvidenceFileService(
     throw new AppError(404, "Evidência não encontrada")
   }
   return evidence
+}
+
+export async function deleteEvidenceService(
+  user: PublicUser,
+  projectId: string,
+  findingId: string,
+  evidenceId: string,
+): Promise<void> {
+  const evidence = await prisma.evidence.findFirst({
+    where: { id: evidenceId, findingId, finding: { projectId } },
+    select: { id: true, storedName: true, uploadedById: true },
+  })
+  if (!evidence) {
+    throw new AppError(404, "Evidência não encontrada")
+  }
+
+  const project = await getProjectService(projectId)
+
+  // Quem enviou, o dono do projeto e o ADMIN podem excluir.
+  const allowed =
+    user.role === "ADMIN" ||
+    project.ownerId === user.id ||
+    evidence.uploadedById === user.id
+  if (!allowed) {
+    throw new AppError(
+      403,
+      "Só quem enviou a evidência, o dono do projeto ou um ADMIN pode excluí-la",
+    )
+  }
+
+  // Primeiro o banco, depois o arquivo: se o arquivo falhar ao apagar, sobra
+  // só um arquivo solto (que vai para o log), nunca um registro sem arquivo.
+  await prisma.evidence.delete({ where: { id: evidence.id, findingId } })
+  await removeFiles([evidence.storedName])
 }
