@@ -8,6 +8,7 @@ import assetsRouter from "../assets/assets.router.js"
 import membersRouter from "../members/members.router.js"
 import findingsRouter from "../findings/findings.router.js"
 import { projectStatsRouter } from "../stats/stats.router.js"
+import reportsRouter from "../reports/reports.router.js"
 import {
   createProject,
   deleteProject,
@@ -89,6 +90,14 @@ projectsRouter.use(
   params,
   requireProjectAccess,
   projectStatsRouter,
+)
+
+// Relatório do projeto (CSV ou Markdown): /projects/:projectId/report
+projectsRouter.use(
+  "/:projectId/report",
+  params,
+  requireProjectAccess,
+  reportsRouter,
 )
 
 export default projectsRouter
