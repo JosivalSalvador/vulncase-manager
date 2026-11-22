@@ -212,9 +212,39 @@ export function createUser(overrides: UserOverrides = {}): Promise<User> {
   })
 }
 
+// Faz o login de verdade (cookie de sessão + token CSRF novo, que muda com a
+// sessão) e devolve o cliente pronto para chamar as rotas protegidas.
+export async function signIn(
+  baseUrl: string,
+  email: string,
+): Promise<TestClient> {
+  const client: TestClient = new TestClient(baseUrl)
+  await client.refreshCsrf()
+
+  const response: ApiResponse = await client.request("POST", "/auth/login", {
+    body: { email, password: TEST_PASSWORD },
+    csrf: true,
+  })
+  if (response.status !== 200) {
+    throw new Error(
+      `Login de teste falhou para ${email}: ${response.status} ` +
+        JSON.stringify(response.body),
+    )
+  }
+
+  await client.refreshCsrf()
+  return client
+}
+
 // Apaga tudo o que os testes criaram (todos os e-mails de teste terminam
 // com o mesmo domínio).
 export async function cleanupTestUsers(): Promise<void> {
+  // Os projetos primeiro: o dono, quem registrou o achado e quem mudou o status
+  // não têm exclusão em cascata, então o banco recusaria apagar o usuário. Ao
+  // apagar o projeto, ativos, achados, evidências e histórico saem junto.
+  await prisma.project.deleteMany({
+    where: { owner: { email: { endsWith: `@${TEST_EMAIL_DOMAIN}` } } },
+  })
   await prisma.user.deleteMany({
     where: { email: { endsWith: `@${TEST_EMAIL_DOMAIN}` } },
   })
