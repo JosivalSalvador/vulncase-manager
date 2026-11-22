@@ -17,7 +17,7 @@ import type {
 const severities = severitySchema.options
 const statuses = findingStatusSchema.options
 
-const SEVERITY_LABEL: Record<Severity, string> = {
+export const SEVERITY_LABEL: Record<Severity, string> = {
   CRITICAL: "Crítica",
   HIGH: "Alta",
   MEDIUM: "Média",

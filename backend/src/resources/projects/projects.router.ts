@@ -9,6 +9,7 @@ import membersRouter from "../members/members.router.js"
 import findingsRouter from "../findings/findings.router.js"
 import { projectStatsRouter } from "../stats/stats.router.js"
 import reportsRouter from "../reports/reports.router.js"
+import summaryRouter from "../summary/summary.router.js"
 import {
   createProject,
   deleteProject,
@@ -98,6 +99,14 @@ projectsRouter.use(
   params,
   requireProjectAccess,
   reportsRouter,
+)
+
+// Resumo automático do projeto: /projects/:projectId/summary
+projectsRouter.use(
+  "/:projectId/summary",
+  params,
+  requireProjectAccess,
+  summaryRouter,
 )
 
 export default projectsRouter

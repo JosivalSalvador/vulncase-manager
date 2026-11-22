@@ -16,13 +16,12 @@ import type { ReportFile, ReportFinding, ReportQuery } from "./reports.types.js"
 // derrube a API; quem passar dele precisa filtrar ou dividir o projeto.
 export const REPORT_MAX_FINDINGS = 5000
 
-export async function buildReportService(
+// Carrega os achados do projeto já "achatados", com vencido e parado calculados.
+// Fica separada para o relatório e o resumo automático usarem os mesmos números.
+export async function loadReportFindings(
   projectId: string,
-  query: ReportQuery,
-): Promise<ReportFile> {
-  const { format, staleDays } = query
-  const project = await getProjectService(projectId)
-
+  staleDays: number,
+): Promise<ReportFinding[]> {
   // Uma consulta só: o resumo e a lista saem do mesmo conjunto de achados,
   // então os números do relatório sempre batem com o que está listado.
   const rows = await prisma.finding.findMany({
@@ -39,7 +38,7 @@ export async function buildReportService(
   if (rows.length > REPORT_MAX_FINDINGS) {
     throw new AppError(
       422,
-      `O projeto tem mais de ${REPORT_MAX_FINDINGS} achados, mais do que cabe em um relatório`,
+      `O projeto tem mais de ${REPORT_MAX_FINDINGS} achados, mais do que cabe em um relatório ou resumo`,
     )
   }
 
@@ -48,7 +47,7 @@ export async function buildReportService(
   const today = startOfToday().getTime()
   const staleBefore = daysAgo(staleDays).getTime()
 
-  const findings: ReportFinding[] = rows.map((row) => {
+  return rows.map((row) => {
     const open = OPEN_STATUSES.includes(row.status)
     return {
       id: row.id,
@@ -73,6 +72,15 @@ export async function buildReportService(
       stale: open && row.createdAt.getTime() < staleBefore,
     }
   })
+}
+
+export async function buildReportService(
+  projectId: string,
+  query: ReportQuery,
+): Promise<ReportFile> {
+  const { format, staleDays } = query
+  const project = await getProjectService(projectId)
+  const findings = await loadReportFindings(projectId, staleDays)
 
   const generatedOn = startOfToday().toISOString().slice(0, 10)
 
