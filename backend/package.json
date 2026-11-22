@@ -14,7 +14,10 @@
     "lint:fix": "eslint --fix src/",
     "format": "prettier --write src/",
     "format:check": "prettier src/ --check",
-    "test": "vitest run --reporter=default --reporter=html --coverage"
+    "test": "vitest run --reporter=default --reporter=html --coverage",
+    "test:unit": "vitest run --project unit",
+    "test:db": "docker compose up -d --wait db-test redis",
+    "test:integration": "npm run test:db && vitest run --project integration"
   },
   "repository": {
     "type": "git",

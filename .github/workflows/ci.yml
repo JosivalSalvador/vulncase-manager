@@ -48,13 +48,40 @@ jobs:
   test:
     name: Testes
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: backend
     env:
-      # Valor falso, só para o Prisma não reclamar. Não é segredo.
-      DATABASE_URL: mysql://ci:ci@localhost:3306/ci
+      # Valores falsos, só para a CI. Não são segredos: o banco e o Redis
+      # existem apenas durante este job.
+      DATABASE_URL: mysql://ci:ci@localhost:3306/vulncase_test
+      TEST_DATABASE_URL: mysql://ci:ci@localhost:3306/vulncase_test
+      TEST_REDIS_URL: redis://localhost:6379/15
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci
+          MYSQL_DATABASE: vulncase_test
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
     steps:
       - uses: actions/checkout@v7
         with:
@@ -68,4 +95,5 @@ jobs:
 
       - run: npm ci
       - run: npx prisma generate
+
       - run: npm test
