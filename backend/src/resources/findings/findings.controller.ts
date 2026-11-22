@@ -5,6 +5,7 @@ import {
   changeFindingStatusService,
   createFindingService,
   deleteFindingService,
+  findPossibleDuplicatesService,
   getFindingService,
   listFindingHistoryService,
   listFindingsService,
@@ -13,6 +14,7 @@ import {
 import type {
   ChangeStatusInput,
   CreateFindingInput,
+  DuplicatesQuery,
   FindingParams,
   ListFindingsQuery,
   ListHistoryQuery,
@@ -32,6 +34,18 @@ export async function createFinding(
     req.body as CreateFindingInput,
   )
   res.status(201).json(finding)
+}
+
+export async function listPossibleDuplicates(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { projectId } = req.params as ProjectParams
+  const data = await findPossibleDuplicatesService(
+    projectId,
+    req.query as unknown as DuplicatesQuery,
+  )
+  res.json({ data })
 }
 
 export async function listFindings(req: Request, res: Response): Promise<void> {

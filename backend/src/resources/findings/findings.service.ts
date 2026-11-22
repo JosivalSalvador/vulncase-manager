@@ -5,6 +5,7 @@ import { daysAgo, startOfToday } from "../../utils/dates.js"
 import { omitUndefined } from "../../utils/omitUndefined.js"
 import { getSkip, toPaginated } from "../../utils/pagination.js"
 import type { PublicUser } from "../auth/auth.types.js"
+import { rankDuplicates } from "./findings.duplicates.js"
 import {
   assertTransitionAllowed,
   OPEN_STATUSES,
@@ -13,6 +14,7 @@ import { getProjectService } from "../projects/projects.service.js"
 import type {
   ChangeStatusInput,
   CreateFindingInput,
+  DuplicatesQuery,
   ListFindingsQuery,
   ListHistoryQuery,
   UpdateFindingInput,
@@ -69,6 +71,53 @@ export async function assertRelationsBelongToProject(
   }
 }
 
+// Quantos achados abertos do mesmo ativo são comparados. O limite mantém o
+// custo previsível; os mais recentes vêm primeiro.
+const DUPLICATE_SCAN_LIMIT = 300
+
+// Procura, entre os achados ABERTOS do mesmo ativo, os que parecem repetir o
+// novo. Achados já corrigidos ficam de fora: reaparecer depois de corrigido é
+// regressão, não duplicata. Sem ativo, compara só com os que também não têm.
+async function findDuplicates(
+  projectId: string,
+  probe: {
+    title: string
+    assetId?: string | null | undefined
+    cwe?: string | null | undefined
+    cve?: string | null | undefined
+  },
+) {
+  const candidates = await prisma.finding.findMany({
+    where: {
+      projectId,
+      assetId: probe.assetId ?? null,
+      status: { in: OPEN_STATUSES },
+    },
+    select: {
+      id: true,
+      title: true,
+      severity: true,
+      status: true,
+      cwe: true,
+      cve: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: DUPLICATE_SCAN_LIMIT,
+  })
+
+  return rankDuplicates(probe, candidates)
+}
+
+export async function findPossibleDuplicatesService(
+  projectId: string,
+  query: DuplicatesQuery,
+) {
+  // O ativo informado precisa ser deste projeto (mesma regra do achado).
+  await assertRelationsBelongToProject(projectId, query.assetId, undefined)
+  return findDuplicates(projectId, query)
+}
+
 export async function createFindingService(
   user: PublicUser,
   projectId: string,
@@ -80,7 +129,11 @@ export async function createFindingService(
     input.assigneeId,
   )
 
-  return prisma.finding.create({
+  // Procura ANTES de criar, para o achado novo não aparecer como duplicata de
+  // si mesmo. É só um aviso: o achado é criado do mesmo jeito.
+  const possibleDuplicates = await findDuplicates(projectId, input)
+
+  const finding = await prisma.finding.create({
     data: {
       title: input.title,
       description: input.description,
@@ -101,6 +154,8 @@ export async function createFindingService(
     },
     include: findingInclude,
   })
+
+  return { ...finding, possibleDuplicates }
 }
 
 export async function listFindingsService(
