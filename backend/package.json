@@ -1,5 +1,5 @@
 {
-  "name": "trabalhofinalcyber",
+  "name": "vulncase-backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -44,7 +44,6 @@
     "morgan": "^1.12.1",
     "multer": "^2.5.0",
     "redis": "^6.3.1",
-    "uuid": "^14.0.3",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -57,7 +56,6 @@
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.3.0",
     "@types/node": "^26.6.6",
-    "@types/uuid": "^11.0.0",
     "@vitest/coverage-v8": "^5.1.0",
     "@vitest/ui": "^5.1.0",
     "eslint": "^10.15.0",
@@ -74,7 +72,6 @@
     "esbuild@0.28.2": true,
     "prisma@7.10.1": true
   },
-
   "overrides": {
     "effect": "3.22.1"
   }

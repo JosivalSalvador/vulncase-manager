@@ -1,7 +1,7 @@
 import { prisma } from "../../lib/prisma.js"
 import { removeFiles } from "../../lib/storage.js"
 import { AppError, type ErrorDetail } from "../../utils/AppError.js"
-import { daysAgo, startOfTodayUtc } from "../../utils/dates.js"
+import { daysAgo, startOfToday } from "../../utils/dates.js"
 import { omitUndefined } from "../../utils/omitUndefined.js"
 import { getSkip, toPaginated } from "../../utils/pagination.js"
 import type { PublicUser } from "../auth/auth.types.js"
@@ -132,7 +132,7 @@ export async function listFindingsService(
       ? {
           AND: [
             { status: { in: OPEN_STATUSES } },
-            ...(overdue ? [{ dueDate: { lt: startOfTodayUtc() } }] : []),
+            ...(overdue ? [{ dueDate: { lt: startOfToday() } }] : []),
             ...(staleDays ? [{ createdAt: { lt: daysAgo(staleDays) } }] : []),
           ],
         }

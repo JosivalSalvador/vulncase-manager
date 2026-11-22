@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma.js"
-import { daysAgo, startOfTodayUtc } from "../../utils/dates.js"
+import { daysAgo, startOfToday } from "../../utils/dates.js"
 import type { PublicUser } from "../auth/auth.types.js"
 import {
   findingStatusSchema,
@@ -67,7 +67,7 @@ export async function getProjectStatsService(
         _count: { _all: true },
       }),
       prisma.finding.count({
-        where: { ...open, dueDate: { lt: startOfTodayUtc() } },
+        where: { ...open, dueDate: { lt: startOfToday() } },
       }),
       prisma.finding.count({
         where: { ...open, createdAt: { lt: daysAgo(staleDays) } },
@@ -151,7 +151,7 @@ export async function getOverallStatsService(
     }),
     prisma.finding.groupBy({
       by: ["projectId"],
-      where: { ...open, dueDate: { lt: startOfTodayUtc() } },
+      where: { ...open, dueDate: { lt: startOfToday() } },
       _count: { _all: true },
     }),
     prisma.finding.groupBy({

@@ -8,6 +8,17 @@ const secret = makeValidator((input: string): string => {
   return input
 })
 
+// Nome IANA de fuso horário, como "America/Manaus". O próprio Intl recusa
+// nomes que não existem.
+const timeZone = makeValidator((input: string): string => {
+  try {
+    new Intl.DateTimeFormat("en-CA", { timeZone: input })
+  } catch {
+    throw new Error("precisa ser um fuso IANA válido, como America/Manaus")
+  }
+  return input
+})
+
 export const env = cleanEnv(process.env, {
   NODE_ENV: str({
     choices: ["development", "test", "production"],
@@ -25,4 +36,5 @@ export const env = cleanEnv(process.env, {
     devDefault: "dev-only-csrf-nao-use-em-producao-abcdefghijk",
   }),
   UPLOAD_DIR: str({ default: "uploads" }),
+  APP_TIMEZONE: timeZone({ default: "America/Manaus" }),
 })
