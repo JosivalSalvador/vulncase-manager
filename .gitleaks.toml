@@ -1,0 +1,11 @@
+title = "VulnCase - configuração do gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Senhas falsas de teste e demo (não são segredos reais)"
+paths = [
+  '''backend/src/test/helpers\.ts''',
+  '''backend/src/seed/seed\.data\.ts''',
+]

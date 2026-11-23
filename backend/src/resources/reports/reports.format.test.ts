@@ -230,7 +230,7 @@ describe("toMarkdown", (): void => {
     )
     expect(md).toContain("> \\# título falso")
     expect(md).toContain("> \\<script\\>alert(1)\\</script\\>")
-    expect(md).not.toMatch(/^<script>/m)
+    expect(md.toLowerCase()).not.toContain("<script>")
   })
 
   it("não deixa uma quebra de linha no título criar um título falso", (): void => {
