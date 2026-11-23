@@ -32,3 +32,10 @@ O **SSRF**, que era categoria própria na edição anterior, foi incorporado ao 
 ## Onde o OWASP aparece no produto
 
 O próprio VulnCase usa o catálogo para classificar achados. O campo de categoria OWASP de um achado só aceita códigos que existem no catálogo, e as listas são consultadas por `GET /catalog/owasp` e `GET /catalog/cwe`. O catálogo guarda a edição 2025 e também a de 2021, para quem registra achados de relatórios antigos. Os arquivos são `backend/src/resources/catalog/catalog.data.ts`, `backend/src/resources/catalog/catalog.router.ts` e `backend/src/resources/findings/findings.schema.ts`.
+
+
+**Enumeração de usuários no cadastro (CWE-204, Observable Response Discrepancy)**
+
+Decisão: manter. `POST /auth/register` responde 409 ("E-mail já cadastrado") quando o e-mail já existe, o que revela quais e-mails têm conta. O OWASP recomenda responder igual nos dois casos e enviar um link de ativação por e-mail. O projeto não tem envio de e-mail e, sem ele, quem já tem conta não saberia por que o cadastro falhou. Risco aceito para o protótipo, com mitigações no código: limite de 10 cadastros por hora por IP, token CSRF obrigatório e login com a mesma resposta 401 (e custo de bcrypt equivalente, via hash falso) para e-mail inexistente e senha errada.
+
+Limitações conhecidas: o limite é por IP e fica em memória, então zera ao reiniciar. Evolução possível: cadastro com confirmação por e-mail e resposta única.
