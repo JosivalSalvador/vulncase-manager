@@ -58,6 +58,14 @@ export const findingParamsSchema = z.object({
   findingId: z.uuid(),
 })
 
+// Consulta de possíveis duplicatas (usada pelo formulário antes de salvar).
+export const duplicatesQuerySchema = z.object({
+  title: titleSchema,
+  assetId: z.uuid().optional(),
+  cwe: cweSchema.optional(),
+  cve: cveSchema.optional(),
+})
+
 export const listFindingsQuerySchema = paginationSchema.extend({
   severity: severitySchema.optional(),
   status: findingStatusSchema.optional(),

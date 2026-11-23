@@ -58,10 +58,13 @@ export async function downloadEvidence(
     })
   } catch (error) {
     // Falhou antes de enviar (ex.: arquivo sumiu do disco): a resposta de erro
-    // não deve herdar os headers de download.
+    // não deve herdar os headers de download. O Content-Type também sai: se
+    // ficasse, o res.json() manteria o tipo do arquivo (image/png, por
+    // exemplo) numa resposta que é JSON.
     if (!res.headersSent) {
       res.removeHeader("Content-Disposition")
       res.removeHeader("Cache-Control")
+      res.removeHeader("Content-Type")
     }
     throw error
   }

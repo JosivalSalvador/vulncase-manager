@@ -10,11 +10,13 @@ import {
   getFinding,
   listFindingHistory,
   listFindings,
+  listPossibleDuplicates,
   updateFinding,
 } from "./findings.controller.js"
 import {
   changeStatusSchema,
   createFindingSchema,
+  duplicatesQuerySchema,
   findingParamsSchema,
   listFindingsQuerySchema,
   listHistoryQuerySchema,
@@ -38,6 +40,14 @@ findingsRouter.post(
   validate({ body: createFindingSchema }),
   createFinding,
 )
+
+// Precisa vir ANTES de "/:findingId", senão "duplicates" seria lido como id.
+findingsRouter.get(
+  "/duplicates",
+  validate({ query: duplicatesQuerySchema }),
+  listPossibleDuplicates,
+)
+
 findingsRouter.get("/:findingId", params, getFinding)
 findingsRouter.patch(
   "/:findingId",

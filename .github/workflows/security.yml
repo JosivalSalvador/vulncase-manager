@@ -51,7 +51,8 @@ jobs:
       - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          GITLEAKS_ENABLE_COMMENTS: false
+          
   dependency-review:
     name: Revisão de dependências
     if: github.event_name == 'pull_request'

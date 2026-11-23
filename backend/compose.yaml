@@ -30,5 +30,29 @@ services:
       timeout: 3s
       retries: 10
 
+    # Banco só para os testes de integração. Não sobe com "docker compose up":
+  # o "npm run test:integration" liga ele sozinho. Os dados ficam em memória
+  # (tmpfs) e somem quando o container para. Os valores são fixos e falsos de
+  # propósito, porque este banco nunca guarda nada de verdade.
+  db-test:
+    image: mysql:8.4
+    container_name: vulncase-db-test
+    profiles: ["test"]
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: vulncase_test
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    ports:
+      - "127.0.0.1:3307:3306"
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
 volumes:
   vulncase-db-data:
