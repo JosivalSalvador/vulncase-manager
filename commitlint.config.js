@@ -4,7 +4,16 @@ export default {
     "scope-enum": [
       1,
       "always",
-      ["backend", "deps", "ci", "husky", "docker", "docs", "prisma"],
+      [
+        "backend",
+        "frontend",
+        "deps",
+        "ci",
+        "husky",
+        "docker",
+        "docs",
+        "prisma",
+      ],
     ],
   },
 }
