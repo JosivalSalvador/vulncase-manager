@@ -7,6 +7,7 @@ import type { Express } from "express"
 import type { User } from "../generated/prisma/client.js"
 import type { Role } from "../generated/prisma/enums.js"
 import { prisma } from "../lib/prisma.js"
+import { removeFiles } from "../lib/storage.js"
 
 export const TEST_PASSWORD = "SenhaForte123"
 export const TEST_EMAIL_DOMAIN = "teste.local"
@@ -21,6 +22,13 @@ export interface ApiResponse {
   status: number
   headers: Headers
   body: unknown
+}
+
+export interface DownloadResponse {
+  status: number
+  headers: Headers
+  // O corpo exatamente como chegou: um arquivo não é texto.
+  bytes: Buffer
 }
 
 export interface RequestOptions {
@@ -116,6 +124,69 @@ export class TestClient {
 
   setCookie(name: string, value: string): void {
     this.cookies.set(name, value)
+  }
+
+  // Envia um formulário multipart (upload de arquivo). O Content-Type, com o
+  // "boundary", é montado pelo próprio fetch: por isso não aparece aqui. O csrf
+  // funciona como em request(): true usa o token guardado, texto usa esse
+  // token, false não envia token.
+  async upload(
+    path: string,
+    form: FormData,
+    csrf: boolean | string = true,
+  ): Promise<ApiResponse> {
+    const response: Response = await fetch(`${this.baseUrl}${path}`, {
+      method: "POST",
+      headers: this.authHeaders(csrf),
+      body: form,
+    })
+    this.storeCookies(response.headers)
+
+    const text: string = await response.text()
+    let body: unknown = null
+    if (text !== "") {
+      try {
+        body = JSON.parse(text)
+      } catch {
+        body = text
+      }
+    }
+
+    return { status: response.status, headers: response.headers, body }
+  }
+
+  // Baixa um arquivo e devolve os bytes exatamente como chegaram.
+  async download(path: string): Promise<DownloadResponse> {
+    const response: Response = await fetch(`${this.baseUrl}${path}`, {
+      method: "GET",
+      headers: this.authHeaders(),
+    })
+    this.storeCookies(response.headers)
+
+    const bytes: Buffer = Buffer.from(await response.arrayBuffer())
+    return { status: response.status, headers: response.headers, bytes }
+  }
+
+  // Cookie de sessão e token CSRF, do mesmo jeito que o request() monta.
+  private authHeaders(csrf: boolean | string = false): Record<string, string> {
+    const headers: Record<string, string> = {}
+
+    if (this.cookies.size > 0) {
+      headers["Cookie"] = [...this.cookies]
+        .map(([name, value]): string => `${name}=${value}`)
+        .join("; ")
+    }
+
+    if (csrf === true) {
+      if (this.csrfToken === null) {
+        throw new Error("Chame refreshCsrf() antes de usar csrf: true")
+      }
+      headers["X-CSRF-Token"] = this.csrfToken
+    } else if (typeof csrf === "string") {
+      headers["X-CSRF-Token"] = csrf
+    }
+
+    return headers
   }
 
   private storeCookies(headers: Headers): void {
@@ -239,6 +310,13 @@ export async function signIn(
 // Apaga tudo o que os testes criaram (todos os e-mails de teste terminam
 // com o mesmo domínio).
 export async function cleanupTestUsers(): Promise<void> {
+  // Apagar o projeto só apaga os registros das evidências, e os arquivos ficam
+  // no disco. Por isso os nomes são guardados antes e os arquivos removidos no fim.
+  const evidences = await prisma.evidence.findMany({
+    where: { uploadedBy: { email: { endsWith: `@${TEST_EMAIL_DOMAIN}` } } },
+    select: { storedName: true },
+  })
+
   // Os projetos primeiro: o dono, quem registrou o achado e quem mudou o status
   // não têm exclusão em cascata, então o banco recusaria apagar o usuário. Ao
   // apagar o projeto, ativos, achados, evidências e histórico saem junto.
@@ -248,4 +326,6 @@ export async function cleanupTestUsers(): Promise<void> {
   await prisma.user.deleteMany({
     where: { email: { endsWith: `@${TEST_EMAIL_DOMAIN}` } },
   })
+
+  await removeFiles(evidences.map((evidence) => evidence.storedName))
 }
