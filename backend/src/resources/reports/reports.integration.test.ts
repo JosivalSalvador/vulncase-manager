@@ -172,7 +172,7 @@ describe("relatório em CSV", (): void => {
     expect(report.status).toBe(200)
     expect(report.headers.get("content-type")).toBe("text/csv; charset=utf-8")
     expect(report.headers.get("content-disposition")).toBe(
-      `attachment; filename="relatorio-relatorio-portal-web-${today()}.csv"`,
+      `attachment; filename=relatorio-relatorio-portal-web-${today()}.csv`,
     )
     expect(report.headers.get("cache-control")).toBe("private, no-store")
 
@@ -251,7 +251,7 @@ describe("relatório em Markdown", (): void => {
       "text/markdown; charset=utf-8",
     )
     expect(report.headers.get("content-disposition")).toBe(
-      `attachment; filename="relatorio-relatorio-portal-web-${today()}.md"`,
+      `attachment; filename=relatorio-relatorio-portal-web-${today()}.md`,
     )
     expect(report.headers.get("cache-control")).toBe("private, no-store")
     expect(report.text.startsWith("# Relatório de vulnerabilidades: ")).toBe(
