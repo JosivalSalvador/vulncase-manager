@@ -22,6 +22,10 @@ function toPublicUser(user: User): PublicUser {
 export async function registerService(
   input: RegisterInput,
 ): Promise<PublicUser> {
+  // Decisão: o cadastro responde 409 quando o e-mail já existe, o que permite
+  // descobrir quais e-mails têm conta (enumeração de usuários). Escondê-lo
+  // exigiria confirmar o cadastro por e-mail, que este protótipo não tem.
+  // Mitigação: registerRateLimit (10 por hora) e CSRF obrigatório.
   const existing = await prisma.user.findUnique({
     where: { email: input.email },
   })
