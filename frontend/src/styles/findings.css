@@ -1,0 +1,54 @@
+/*
+ * Cores dos achados (severidade e status). Ficam num arquivo próprio para
+ * não se perderem se o index.css for regenerado pelo shadcn.
+ *
+ * Cada token serve de texto e, com opacidade, de fundo do selo:
+ *   className="bg-severity-critical/12 text-severity-critical"
+ * Os tons foram escolhidos para dar contraste mínimo de 4,5:1 (WCAG AA)
+ * nos dois temas. A cor nunca é a única informação: o selo sempre traz o texto.
+ */
+
+@theme inline {
+  --color-severity-critical: var(--severity-critical);
+  --color-severity-high: var(--severity-high);
+  --color-severity-medium: var(--severity-medium);
+  --color-severity-low: var(--severity-low);
+  --color-severity-info: var(--severity-info);
+
+  --color-status-open: var(--status-open);
+  --color-status-in-progress: var(--status-in-progress);
+  --color-status-fixed: var(--status-fixed);
+  --color-status-verified: var(--status-verified);
+  --color-status-accepted-risk: var(--status-accepted-risk);
+  --color-status-false-positive: var(--status-false-positive);
+}
+
+:root {
+  --severity-critical: var(--color-red-700);
+  --severity-high: var(--color-orange-700);
+  --severity-medium: var(--color-yellow-800);
+  --severity-low: var(--color-blue-700);
+  --severity-info: var(--color-slate-600);
+
+  --status-open: var(--color-violet-700);
+  --status-in-progress: var(--color-cyan-700);
+  --status-fixed: var(--color-teal-700);
+  --status-verified: var(--color-green-800);
+  --status-accepted-risk: var(--color-pink-700);
+  --status-false-positive: var(--color-zinc-600);
+}
+
+.dark {
+  --severity-critical: var(--color-red-300);
+  --severity-high: var(--color-orange-300);
+  --severity-medium: var(--color-yellow-300);
+  --severity-low: var(--color-blue-300);
+  --severity-info: var(--color-slate-300);
+
+  --status-open: var(--color-violet-300);
+  --status-in-progress: var(--color-cyan-300);
+  --status-fixed: var(--color-teal-300);
+  --status-verified: var(--color-green-300);
+  --status-accepted-risk: var(--color-pink-300);
+  --status-false-positive: var(--color-zinc-300);
+}
