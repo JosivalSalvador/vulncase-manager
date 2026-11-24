@@ -19,4 +19,12 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Componentes gerados pelo shadcn exportam também funções auxiliares
+    // (ex.: buttonVariants), o que a regra do fast refresh não aceita.
+    files: ["src/components/ui/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 ])
