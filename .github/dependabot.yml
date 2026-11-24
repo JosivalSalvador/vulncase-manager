@@ -1,6 +1,7 @@
 version: 2
 
 updates:
+  # Back-end
   - package-ecosystem: npm
     directory: /backend
     target-branch: dev
@@ -9,15 +10,24 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(deps)"
+    groups:
+      minor-e-patch:
+        update-types: [minor, patch]
 
-  - package-ecosystem: github-actions
-    directory: /
+  # Front-end
+  - package-ecosystem: npm
+    directory: /frontend
     target-branch: dev
     schedule:
       interval: weekly
+    open-pull-requests-limit: 5
     commit-message:
-      prefix: "ci"
-  
+      prefix: "chore(deps)"
+    groups:
+      minor-e-patch:
+        update-types: [minor, patch]
+
+  # Ferramentas da raiz (husky, commitlint, lint-staged)
   - package-ecosystem: npm
     directory: /
     target-branch: dev
@@ -25,3 +35,15 @@ updates:
       interval: weekly
     commit-message:
       prefix: "chore(deps)"
+    groups:
+      minor-e-patch:
+        update-types: [minor, patch]
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
