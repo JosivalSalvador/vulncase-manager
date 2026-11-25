@@ -1,19 +1,34 @@
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import App from "./App"
-import { ThemeProvider } from "@/components/theme-provider"
+
+const fetchMock = vi.fn<typeof fetch>()
+
+beforeEach(() => {
+  vi.stubEnv("VITE_API_URL", "http://api.test")
+  vi.stubGlobal("fetch", fetchMock)
+})
+
+afterEach(() => {
+  fetchMock.mockReset()
+  vi.unstubAllEnvs()
+  vi.unstubAllGlobals()
+})
 
 describe("App", () => {
-  it("mostra o título do sistema", () => {
-    render(
-      <ThemeProvider defaultTheme="light">
-        <App />
-      </ThemeProvider>,
+  it("sem sessão, abre a tela de login", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ error: "Não autenticado" }), {
+        status: 401,
+        headers: { "content-type": "application/json" },
+      }),
     )
 
+    render(<App />)
+
     expect(
-      screen.getByRole("heading", { name: "VulnCase" }),
+      await screen.findByRole("heading", { name: "Entrar" }),
     ).toBeInTheDocument()
   })
 })
