@@ -26,11 +26,12 @@ export function useCreateProject() {
   })
 }
 
-export function useUpdateProject(id: string) {
+export function useUpdateProject() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (body: ProjectBody) => updateProject(id, body),
+    mutationFn: ({ id, body }: { id: string; body: ProjectBody }) =>
+      updateProject(id, body),
     onSuccess: () => refreshProjects(queryClient),
   })
 }

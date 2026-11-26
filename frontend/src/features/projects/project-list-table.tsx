@@ -1,10 +1,20 @@
+import type { ReactNode } from "react"
 import { Link } from "react-router"
 
 import type { Project } from "./types"
 
 const dateFormat = new Intl.DateTimeFormat("pt-BR")
 
-export function ProjectListTable({ projects }: { projects: Project[] }) {
+type ProjectListTableProps = {
+  projects: Project[]
+  // Sem isso, a tabela não tem coluna de ações (quem só lê).
+  renderActions?: (project: Project) => ReactNode
+}
+
+export function ProjectListTable({
+  projects,
+  renderActions,
+}: ProjectListTableProps) {
   return (
     <div className="overflow-x-auto rounded-xl border bg-card">
       <table className="w-full text-sm">
@@ -20,6 +30,11 @@ export function ProjectListTable({ projects }: { projects: Project[] }) {
             <th scope="col" className="p-3 font-medium whitespace-nowrap">
               Criado em
             </th>
+            {renderActions && (
+              <th scope="col" className="p-3">
+                <span className="sr-only">Ações</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -42,6 +57,11 @@ export function ProjectListTable({ projects }: { projects: Project[] }) {
               <td className="p-3 whitespace-nowrap tabular-nums">
                 {dateFormat.format(new Date(project.createdAt))}
               </td>
+              {renderActions && (
+                <td className="p-3 whitespace-nowrap">
+                  {renderActions(project)}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

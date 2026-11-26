@@ -8,6 +8,17 @@ import { ProjectListTable } from "@/features/projects/project-list-table"
 import { useProjects } from "@/features/projects/use-projects"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 
+import { Pencil, Plus, Trash2 } from "lucide-react"
+
+import { useCurrentUser } from "@/features/auth/use-current-user"
+import { DeleteProjectDialog } from "@/features/projects/delete-project-dialog"
+import {
+  canDeleteProject,
+  canWriteProjects,
+} from "@/features/projects/permissions"
+import { ProjectFormSheet } from "@/features/projects/project-form-sheet"
+import type { Project } from "@/features/projects/types"
+
 const PAGE_SIZE = 10
 const SEARCH_DELAY_MS = 300
 
@@ -67,13 +78,54 @@ export function ProjectsPage() {
     ? `Nenhum projeto encontrado para “${search}”.`
     : "Nenhum projeto ainda."
 
+  const { data: user } = useCurrentUser()
+  const canWrite = user ? canWriteProjects(user) : false
+
+  // "new" abre o formulário de criação; um projeto abre o de edição.
+  const [editing, setEditing] = useState<Project | "new" | null>(null)
+  const [deleting, setDeleting] = useState<Project | null>(null)
+
+  // Leitor só consulta: sem coluna de ações.
+  const renderActions =
+    user && canWrite
+      ? (project: Project) => (
+          <div className="flex justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`Editar ${project.name}`}
+              onClick={() => setEditing(project)}
+            >
+              <Pencil />
+            </Button>
+            {canDeleteProject(user, project) && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Excluir ${project.name}`}
+                onClick={() => setDeleting(project)}
+              >
+                <Trash2 />
+              </Button>
+            )}
+          </div>
+        )
+      : undefined
   return (
     <div className="space-y-6 p-4 md:p-8">
-      <header>
-        <h1 className="text-2xl font-semibold">Projetos</h1>
-        <p className="text-sm text-muted-foreground">
-          Escolha um projeto para ver os achados.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Projetos</h1>
+          <p className="text-sm text-muted-foreground">
+            Escolha um projeto para ver os achados.
+          </p>
+        </div>
+        {canWrite && (
+          <Button onClick={() => setEditing("new")}>
+            <Plus data-icon="inline-start" />
+            Novo projeto
+          </Button>
+        )}
       </header>
 
       <div className="max-w-sm">
@@ -121,7 +173,10 @@ export function ProjectsPage() {
             </div>
           ) : (
             <>
-              <ProjectListTable projects={data.data} />
+              <ProjectListTable
+                projects={data.data}
+                renderActions={renderActions}
+              />
               <PaginationControls
                 page={data.meta.page}
                 totalPages={data.meta.totalPages}
@@ -130,6 +185,18 @@ export function ProjectsPage() {
             </>
           )}
         </div>
+      )}
+      {editing && (
+        <ProjectFormSheet
+          project={editing === "new" ? undefined : editing}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {deleting && (
+        <DeleteProjectDialog
+          project={deleting}
+          onClose={() => setDeleting(null)}
+        />
       )}
     </div>
   )
