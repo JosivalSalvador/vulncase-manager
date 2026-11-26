@@ -17,6 +17,11 @@ vi.mock("@/features/stats/use-overall-stats", () => ({
   useOverallStats: () => ({ isPending: true }),
 }))
 
+// Nem a lista de projetos: a busca também fica "carregando".
+vi.mock("@/features/projects/use-projects", () => ({
+  useProjects: () => ({ isPending: true }),
+}))
+
 const fetchMock = vi.fn<typeof fetch>()
 
 function json(body: unknown, status = 200) {

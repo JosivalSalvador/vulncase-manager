@@ -10,6 +10,12 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { resetCsrfToken } from "@/lib/api"
 import { createQueryClient } from "@/lib/query-client"
 
+// O foco aqui é o login: a lista de projetos fica "carregando". Sem isso, o
+// mock devolveria 401 em /projects e a sessão seria encerrada no meio do teste.
+vi.mock("@/features/projects/use-projects", () => ({
+  useProjects: () => ({ isPending: true }),
+}))
+
 const fetchMock = vi.fn<typeof fetch>()
 const ana = { id: "1", email: "ana@a.com", fullname: "Ana", role: "ANALYST" }
 
