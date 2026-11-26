@@ -6,6 +6,7 @@ import { RegisterPage } from "@/pages/register-page"
 import { DashboardPage } from "@/pages/dashboard-page"
 import { ProjectsPage } from "@/pages/projects-page"
 import { ProjectPage } from "@/pages/project-page"
+import { ProjectAssetsPage } from "@/pages/project-assets-page"
 import { AdminUsersPage } from "@/pages/placeholders"
 
 import { AppLayout } from "./app-layout"
@@ -28,6 +29,10 @@ export const routes: RouteObject[] = [
           { path: "/", element: <DashboardPage /> },
           { path: "/projects", element: <ProjectsPage /> },
           { path: "/projects/:projectId", element: <ProjectPage /> },
+          {
+            path: "/projects/:projectId/assets",
+            element: <ProjectAssetsPage />,
+          },
           {
             element: <RequireRole roles={["ADMIN"]} />,
             children: [{ path: "/admin/users", element: <AdminUsersPage /> }],

@@ -221,6 +221,16 @@ describe("painel do projeto", () => {
       await screen.findByRole("list", { name: "Por status" }),
     ).toBeInTheDocument()
   })
+  it("leva para os ativos do projeto", async () => {
+    respond()
+
+    renderAt("/projects/p1")
+
+    expect(await screen.findByRole("link", { name: "Ativos" })).toHaveAttribute(
+      "href",
+      "/projects/p1/assets",
+    )
+  })
 })
 
 describe("resumo e relatório", () => {

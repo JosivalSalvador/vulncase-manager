@@ -1,7 +1,7 @@
 import { ChevronLeft } from "lucide-react"
 import { Link, useParams } from "react-router"
 
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { useOwaspCatalog } from "@/features/catalog/use-owasp-catalog"
 import { SEVERITIES, STATUSES } from "@/features/findings/labels"
 import { useProject } from "@/features/projects/use-project"
@@ -53,7 +53,15 @@ export function ProjectPage() {
             </p>
           )}
         </div>
-        <ReportDownloads projectId={projectId} />
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to={`/projects/${projectId}/assets`}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Ativos
+          </Link>
+          <ReportDownloads projectId={projectId} />
+        </div>
       </header>
       <SummaryCard projectId={projectId} />
       {stats.isPending && (

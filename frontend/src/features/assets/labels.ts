@@ -7,3 +7,7 @@ export const ASSET_TYPES = [
 ] as const
 
 export type AssetType = (typeof ASSET_TYPES)[number]["value"]
+
+export function assetTypeLabel(type: AssetType): string {
+  return ASSET_TYPES.find((item) => item.value === type)?.label ?? type
+}
