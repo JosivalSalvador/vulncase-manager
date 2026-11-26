@@ -2,12 +2,12 @@ import type { RouteObject } from "react-router"
 
 import { LoginPage } from "@/pages/login-page"
 import { NotFoundPage } from "@/pages/not-found-page"
+import { RegisterPage } from "@/pages/register-page"
 import {
   AdminUsersPage,
   DashboardPage,
   ProjectPage,
   ProjectsPage,
-  RegisterPage,
 } from "@/pages/placeholders"
 
 import { AppLayout } from "./app-layout"

@@ -122,6 +122,8 @@ describe("layout", () => {
       await screen.findByRole("heading", { name: "Entrar" }),
     ).toBeInTheDocument()
     expect(router.state.location.pathname).toBe("/login")
+    // Não guarda a página de quem saiu.
+    expect(router.state.location.state).toBeNull()
   })
 
   it("avisa quando não consegue sair e continua logado", async () => {
