@@ -1,7 +1,7 @@
 import { api } from "@/lib/api"
 import type { Paginated } from "@/lib/pagination"
 
-import type { Project, ProjectBody } from "./types"
+import type { Project, ProjectBody, AutoSummary } from "./types"
 
 export type ListProjectsParams = {
   page?: number
@@ -28,4 +28,8 @@ export function deleteProject(id: string) {
 
 export function fetchProject(id: string, signal?: AbortSignal) {
   return api<Project>(`/projects/${id}`, { signal })
+}
+
+export function fetchSummary(id: string, signal?: AbortSignal) {
+  return api<AutoSummary>(`/projects/${id}/summary`, { signal })
 }

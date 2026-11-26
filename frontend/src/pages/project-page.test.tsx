@@ -10,7 +10,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { resetCsrfToken } from "@/lib/api"
 import { createQueryClient } from "@/lib/query-client"
 
-type Part = "project" | "stats" | "catalog"
+type Part = "project" | "stats" | "catalog" | "summary"
 
 const fetchMock = vi.fn<typeof fetch>()
 const ana = { id: "1", email: "ana@a.com", fullname: "Ana", role: "ANALYST" }
@@ -54,6 +54,15 @@ const catalog = {
     },
   ],
 }
+const summary = {
+  generatedOn: "2026-11-26",
+  staleDays: 30,
+  text: [
+    "O projeto Portal RH tem 9 achados no total, e 6 continuam abertos.",
+    "Entre os abertos: 1 crítico, 2 altos e 3 médios.",
+    "Para tratar primeiro:\n1. Crítica: Injeção de SQL no login (vencido)\n2. Alta: Cookie sem Secure",
+  ].join("\n\n"),
+}
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -69,6 +78,7 @@ function respond(overrides: Partial<Record<Part, () => Response>> = {}) {
     project: () => json(project),
     stats: () => json(stats),
     catalog: () => json(catalog),
+    summary: () => json(summary),
     ...overrides,
   }
 
@@ -77,6 +87,9 @@ function respond(overrides: Partial<Record<Part, () => Response>> = {}) {
 
     if (pathname === "/projects/p1") return Promise.resolve(parts.project())
     if (pathname === "/projects/p1/stats") return Promise.resolve(parts.stats())
+    if (pathname === "/projects/p1/summary") {
+      return Promise.resolve(parts.summary())
+    }
     if (pathname === "/catalog/owasp") return Promise.resolve(parts.catalog())
 
     return Promise.resolve(json(ana))
@@ -161,7 +174,11 @@ describe("painel do projeto", () => {
     renderAt("/projects/p1")
 
     expect(await screen.findByText("A03:2021")).toBeInTheDocument()
-    expect(screen.queryByText(/Injeção/)).not.toBeInTheDocument()
+    expect(
+      within(
+        screen.getByRole("list", { name: "Por categoria OWASP" }),
+      ).queryByText(/Injeção/),
+    ).not.toBeInTheDocument()
     expect(screen.queryByRole("alert")).not.toBeInTheDocument()
   })
 
@@ -203,5 +220,75 @@ describe("painel do projeto", () => {
     expect(
       await screen.findByRole("list", { name: "Por status" }),
     ).toBeInTheDocument()
+  })
+})
+
+describe("resumo e relatório", () => {
+  it("mostra o resumo em parágrafos, mantendo a lista numerada", async () => {
+    respond()
+
+    renderAt("/projects/p1")
+
+    expect(
+      await screen.findByText(
+        "O projeto Portal RH tem 9 achados no total, e 6 continuam abertos.",
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText("Entre os abertos: 1 crítico, 2 altos e 3 médios."),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Para tratar primeiro:/)).toHaveClass(
+      "whitespace-pre-line",
+    )
+    expect(screen.getByText(/Gerado em 26\/11\/2026/)).toBeInTheDocument()
+  })
+
+  it("mostra o texto do resumo como texto, sem interpretar HTML", async () => {
+    respond({
+      summary: () =>
+        json({ ...summary, text: "O projeto <b>Portal</b> tem 1 achado." }),
+    })
+
+    renderAt("/projects/p1")
+
+    expect(
+      await screen.findByText("O projeto <b>Portal</b> tem 1 achado."),
+    ).toBeInTheDocument()
+    expect(document.querySelector("b")).toBeNull()
+  })
+
+  it("mostra o erro do resumo e permite tentar de novo", async () => {
+    respond({
+      summary: () => json({ error: "O projeto tem achados demais" }, 422),
+    })
+    renderAt("/projects/p1")
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "O projeto tem achados demais",
+    )
+
+    respond()
+    await userEvent.click(
+      screen.getByRole("button", { name: "Tentar de novo" }),
+    )
+
+    expect(await screen.findByText(/Para tratar primeiro:/)).toBeInTheDocument()
+  })
+
+  it("oferece o relatório em Markdown e em CSV, em outra aba", async () => {
+    respond()
+
+    renderAt("/projects/p1")
+
+    const markdown = await screen.findByRole("link", {
+      name: "Relatório em Markdown",
+    })
+    expect(markdown).toHaveAttribute(
+      "href",
+      "http://api.test/projects/p1/report?format=md",
+    )
+    expect(markdown).toHaveAttribute("target", "_blank")
+    expect(
+      screen.getByRole("link", { name: "Relatório em CSV" }),
+    ).toHaveAttribute("href", "http://api.test/projects/p1/report?format=csv")
   })
 })

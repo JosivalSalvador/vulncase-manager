@@ -9,6 +9,8 @@ import { CountBars } from "@/features/stats/count-bars"
 import { OwaspBars } from "@/features/stats/owasp-bars"
 import { StatCards } from "@/features/stats/stat-cards"
 import { useProjectStats } from "@/features/stats/use-project-stats"
+import { ReportDownloads } from "@/features/projects/report-downloads"
+import { SummaryCard } from "@/features/projects/summary-card"
 
 export function ProjectPage() {
   const { projectId = "" } = useParams()
@@ -33,24 +35,27 @@ export function ProjectPage() {
 
   return (
     <div className="space-y-6 p-4 md:p-8">
-      <header className="space-y-1">
-        <Link
-          to="/projects"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
-        >
-          <ChevronLeft className="size-4" aria-hidden="true" />
-          Voltar para projetos
-        </Link>
-        <h1 className="text-2xl font-semibold">
-          {project.data?.name ?? "Projeto"}
-        </h1>
-        {project.data?.description && (
-          <p className="text-sm text-muted-foreground">
-            {project.data.description}
-          </p>
-        )}
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <Link
+            to="/projects"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
+          >
+            <ChevronLeft className="size-4" aria-hidden="true" />
+            Voltar para projetos
+          </Link>
+          <h1 className="text-2xl font-semibold">
+            {project.data?.name ?? "Projeto"}
+          </h1>
+          {project.data?.description && (
+            <p className="text-sm text-muted-foreground">
+              {project.data.description}
+            </p>
+          )}
+        </div>
+        <ReportDownloads projectId={projectId} />
       </header>
-
+      <SummaryCard projectId={projectId} />
       {stats.isPending && (
         <p role="status" className="text-muted-foreground">
           Carregando…

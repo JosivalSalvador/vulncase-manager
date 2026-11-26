@@ -9,5 +9,7 @@ export const queryKeys = {
   // Números que saem dos achados (painel, resumo): quem mexer em achado deve
   // invalidar o prefixo ["projects", "numbers", id].
   projectStats: (id: string) => ["projects", "numbers", id, "stats"] as const,
+  projectSummary: (id: string) =>
+    ["projects", "numbers", id, "summary"] as const,
   owaspCatalog: ["catalog", "owasp"] as const,
 }
