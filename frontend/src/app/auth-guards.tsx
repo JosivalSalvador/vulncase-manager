@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useLocation } from "react-router"
+import { Navigate, Outlet, useLocation, type Path } from "react-router"
 
 import { Button } from "@/components/ui/button"
 import { useCurrentUser } from "@/features/auth/use-current-user"
@@ -50,12 +50,22 @@ export function RequireRole({ roles }: { roles: Role[] }) {
   return <Outlet />
 }
 
+// A página que o RequireAuth guardou, ou o início.
+function returnPath(state: unknown): string {
+  const from = (state as { from?: Partial<Path> } | null)?.from
+
+  if (!from?.pathname) return "/"
+
+  return `${from.pathname}${from.search ?? ""}${from.hash ?? ""}`
+}
+
 // Login e cadastro: quem já está logado não precisa vê-los.
 export function PublicOnly() {
   const { data: user, isPending } = useCurrentUser()
+  const location = useLocation()
 
   if (isPending) return <Loading />
-  if (user) return <Navigate to="/" replace />
+  if (user) return <Navigate to={returnPath(location.state)} replace />
 
   return <Outlet />
 }

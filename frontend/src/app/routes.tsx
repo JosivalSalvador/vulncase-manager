@@ -1,10 +1,10 @@
 import type { RouteObject } from "react-router"
 
+import { LoginPage } from "@/pages/login-page"
 import { NotFoundPage } from "@/pages/not-found-page"
 import {
   AdminUsersPage,
   DashboardPage,
-  LoginPage,
   ProjectPage,
   ProjectsPage,
   RegisterPage,
