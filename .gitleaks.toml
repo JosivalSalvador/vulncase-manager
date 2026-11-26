@@ -8,4 +8,5 @@ description = "Senhas falsas de teste e demo (não são segredos reais)"
 paths = [
   '''backend/src/test/helpers\.ts''',
   '''backend/src/seed/seed\.data\.ts''',
+  '''(backend|frontend)/src/.*\.test\.tsx?''',
 ]
