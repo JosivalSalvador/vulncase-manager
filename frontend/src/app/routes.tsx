@@ -10,6 +10,7 @@ import {
   RegisterPage,
 } from "@/pages/placeholders"
 
+import { AppLayout } from "./app-layout"
 import { PublicOnly, RequireAuth, RequireRole } from "./auth-guards"
 
 export const routes: RouteObject[] = [
@@ -23,12 +24,17 @@ export const routes: RouteObject[] = [
   {
     element: <RequireAuth />,
     children: [
-      { path: "/", element: <DashboardPage /> },
-      { path: "/projects", element: <ProjectsPage /> },
-      { path: "/projects/:projectId", element: <ProjectPage /> },
       {
-        element: <RequireRole roles={["ADMIN"]} />,
-        children: [{ path: "/admin/users", element: <AdminUsersPage /> }],
+        element: <AppLayout />,
+        children: [
+          { path: "/", element: <DashboardPage /> },
+          { path: "/projects", element: <ProjectsPage /> },
+          { path: "/projects/:projectId", element: <ProjectPage /> },
+          {
+            element: <RequireRole roles={["ADMIN"]} />,
+            children: [{ path: "/admin/users", element: <AdminUsersPage /> }],
+          },
+        ],
       },
     ],
   },

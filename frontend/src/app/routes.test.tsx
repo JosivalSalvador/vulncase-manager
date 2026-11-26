@@ -1,5 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query"
 import { render, screen } from "@testing-library/react"
+import { ThemeProvider } from "@/components/theme-provider"
 import { createMemoryRouter } from "react-router"
 import { RouterProvider } from "react-router/dom"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -31,9 +32,11 @@ function renderAt(path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] })
 
   render(
-    <QueryClientProvider client={createQueryClient()}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
+    <ThemeProvider defaultTheme="light">
+      <QueryClientProvider client={createQueryClient()}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </ThemeProvider>,
   )
 
   return router
