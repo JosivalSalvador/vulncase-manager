@@ -11,5 +11,10 @@ export const queryKeys = {
   projectStats: (id: string) => ["projects", "numbers", id, "stats"] as const,
   projectSummary: (id: string) =>
     ["projects", "numbers", id, "summary"] as const,
+  // Ativos de um projeto: o prefixo pega todas as listas dele. Fica debaixo de
+  // ["projects"], então apagar o projeto também limpa os ativos do cache.
+  projectAssets: (id: string) => ["projects", "assets", id] as const,
+  assetList: (id: string, params: object) =>
+    ["projects", "assets", id, "list", params] as const,
   owaspCatalog: ["catalog", "owasp"] as const,
 }
