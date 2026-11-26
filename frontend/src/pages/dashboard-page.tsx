@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button"
 import { ProjectsTable } from "@/features/stats/projects-table"
 import { StatCards } from "@/features/stats/stat-cards"
 import { useOverallStats } from "@/features/stats/use-overall-stats"
+import { SEVERITIES, STATUSES } from "@/features/findings/labels"
+import { CountBars } from "@/features/stats/count-bars"
 
 export function DashboardPage() {
   const { data, isPending, error, refetch } = useOverallStats()
@@ -35,6 +37,18 @@ export function DashboardPage() {
       {data && (
         <>
           <StatCards totals={data.totals} />
+          <div className="grid gap-3 lg:grid-cols-2">
+            <CountBars
+              title="Por severidade"
+              options={SEVERITIES}
+              counts={data.totals.bySeverity}
+            />
+            <CountBars
+              title="Por status"
+              options={STATUSES}
+              counts={data.totals.byStatus}
+            />
+          </div>
           <ProjectsTable projects={data.projects} />
         </>
       )}

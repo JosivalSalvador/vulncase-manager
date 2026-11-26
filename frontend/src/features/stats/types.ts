@@ -1,5 +1,6 @@
-// Resposta do GET /stats. A contagem por severidade e por status entra na
-// próxima parte, junto com a tela que a mostra.
+import type { FindingStatus, Severity } from "@/features/findings/labels"
+
+// Resposta do GET /stats.
 export type ProjectSummary = {
   id: string
   name: string
@@ -17,6 +18,8 @@ export type OverallStats = {
     overdue: number
     stale: number
     staleDays: number
+    bySeverity: Record<Severity, number>
+    byStatus: Record<FindingStatus, number>
   }
   projects: ProjectSummary[]
 }

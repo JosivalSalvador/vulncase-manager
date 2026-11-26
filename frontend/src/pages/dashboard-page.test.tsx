@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query"
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { createMemoryRouter } from "react-router"
 import { RouterProvider } from "react-router/dom"
@@ -21,6 +21,15 @@ const stats = {
     overdue: 4,
     stale: 3,
     staleDays: 30,
+    bySeverity: { CRITICAL: 3, HIGH: 5, MEDIUM: 4, LOW: 0, INFO: 0 },
+    byStatus: {
+      OPEN: 6,
+      IN_PROGRESS: 2,
+      FIXED: 1,
+      VERIFIED: 1,
+      ACCEPTED_RISK: 1,
+      FALSE_POSITIVE: 1,
+    },
   },
   projects: [
     {
@@ -88,6 +97,21 @@ describe("dashboard", () => {
       screen.getByText("Achados", { selector: "dt" }).parentElement,
     ).toHaveTextContent("12")
     expect(screen.getByText("Parados há 30+ dias")).toBeInTheDocument()
+  })
+
+  it("mostra as contagens por severidade e por status em texto", async () => {
+    respondStatsWith(() => json(stats))
+
+    renderAt("/")
+
+    const severity = await screen.findByRole("list", { name: "Por severidade" })
+    expect(
+      within(severity)
+        .getAllByRole("listitem")
+        .map((item) => item.textContent),
+    ).toEqual(["Crítica3", "Alta5", "Média4", "Baixa0", "Informativa0"])
+    const status = screen.getByRole("list", { name: "Por status" })
+    expect(within(status).getByText("Em correção")).toBeInTheDocument()
   })
 
   it("avisa quando a pessoa não participa de nenhum projeto", async () => {
