@@ -1,6 +1,13 @@
 import type { OverallStats } from "./types"
 
-export function StatCards({ totals }: { totals: OverallStats["totals"] }) {
+type StatCardsProps = {
+  totals: Pick<
+    OverallStats["totals"],
+    "total" | "open" | "openCritical" | "overdue" | "stale" | "staleDays"
+  >
+}
+
+export function StatCards({ totals }: StatCardsProps) {
   const cards = [
     { label: "Achados", value: totals.total },
     { label: "Abertos", value: totals.open },

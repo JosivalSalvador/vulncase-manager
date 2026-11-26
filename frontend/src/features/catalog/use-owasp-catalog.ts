@@ -1,0 +1,24 @@
+import { useQuery } from "@tanstack/react-query"
+
+import { api } from "@/lib/api"
+import { queryKeys } from "@/lib/query-keys"
+
+import type { OwaspEntry } from "./types"
+
+// Código -> nome em português, para os gráficos.
+function toNameMap(response: { data: OwaspEntry[] }): Map<string, string> {
+  return new Map(
+    response.data.map((entry): [string, string] => [entry.code, entry.namePt]),
+  )
+}
+
+export function useOwaspCatalog() {
+  return useQuery({
+    queryKey: queryKeys.owaspCatalog,
+    queryFn: ({ signal }) =>
+      api<{ data: OwaspEntry[] }>("/catalog/owasp", { signal }),
+    select: toNameMap,
+    // Lista fixa do back: não muda durante a sessão.
+    staleTime: Infinity,
+  })
+}

@@ -25,3 +25,7 @@ export function updateProject(id: string, body: ProjectBody) {
 export function deleteProject(id: string) {
   return api(`/projects/${id}`, { method: "DELETE" })
 }
+
+export function fetchProject(id: string, signal?: AbortSignal) {
+  return api<Project>(`/projects/${id}`, { signal })
+}
