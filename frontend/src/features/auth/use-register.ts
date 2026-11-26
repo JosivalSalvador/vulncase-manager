@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { queryKeys } from "@/lib/query-keys"
-
 import { login, register, type RegisterInput } from "./api"
+
+import { startSession } from "./start-session"
 
 // O cadastro do back não abre sessão: em seguida fazemos o login.
 async function registerAndLogin(input: RegisterInput) {
@@ -23,8 +23,6 @@ export function useRegister() {
 
   return useMutation({
     mutationFn: registerAndLogin,
-    onSuccess: (user) => {
-      queryClient.setQueryData(queryKeys.currentUser, user)
-    },
+    onSuccess: (user) => startSession(queryClient, user),
   })
 }

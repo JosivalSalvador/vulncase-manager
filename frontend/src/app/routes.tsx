@@ -3,12 +3,8 @@ import type { RouteObject } from "react-router"
 import { LoginPage } from "@/pages/login-page"
 import { NotFoundPage } from "@/pages/not-found-page"
 import { RegisterPage } from "@/pages/register-page"
-import {
-  AdminUsersPage,
-  DashboardPage,
-  ProjectPage,
-  ProjectsPage,
-} from "@/pages/placeholders"
+import { DashboardPage } from "@/pages/dashboard-page"
+import { AdminUsersPage, ProjectPage, ProjectsPage } from "@/pages/placeholders"
 
 import { AppLayout } from "./app-layout"
 import { PublicOnly, RequireAuth, RequireRole } from "./auth-guards"

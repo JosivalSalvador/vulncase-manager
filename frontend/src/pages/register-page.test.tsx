@@ -10,6 +10,11 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { resetCsrfToken } from "@/lib/api"
 import { createQueryClient } from "@/lib/query-client"
 
+// Estes testes não olham os números do dashboard: a busca fica "carregando".
+vi.mock("@/features/stats/use-overall-stats", () => ({
+  useOverallStats: () => ({ isPending: true }),
+}))
+
 const fetchMock = vi.fn<typeof fetch>()
 const ana = { id: "1", email: "ana@a.com", fullname: "Ana", role: "ANALYST" }
 

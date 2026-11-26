@@ -12,6 +12,11 @@ import { createQueryClient } from "@/lib/query-client"
 import { initialsOf, isActivePath, navItemsFor } from "./navigation"
 import { routes } from "./routes"
 
+// Estes testes não olham os números do dashboard: a busca fica "carregando".
+vi.mock("@/features/stats/use-overall-stats", () => ({
+  useOverallStats: () => ({ isPending: true }),
+}))
+
 const fetchMock = vi.fn<typeof fetch>()
 
 function json(body: unknown, status = 200) {
