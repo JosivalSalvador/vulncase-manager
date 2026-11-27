@@ -20,5 +20,9 @@ export const queryKeys = {
   projectMembers: (id: string) => ["projects", "members", id] as const,
   memberList: (id: string, params: object) =>
     ["projects", "members", id, "list", params] as const,
+  // Achados de um projeto: mesma ideia dos ativos (prefixo pega as listas).
+  projectFindings: (id: string) => ["projects", "findings", id] as const,
+  findingList: (id: string, params: object) =>
+    ["projects", "findings", id, "list", params] as const,
   owaspCatalog: ["catalog", "owasp"] as const,
 }
