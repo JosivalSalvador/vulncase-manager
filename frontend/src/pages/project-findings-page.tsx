@@ -1,20 +1,23 @@
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Plus } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Link, useParams, useSearchParams } from "react-router"
 
 import { FormField } from "@/components/form-field"
 import { PaginationControls } from "@/components/pagination-controls"
 import { Button } from "@/components/ui/button"
+import { useCurrentUser } from "@/features/auth/use-current-user"
 import {
   FindingFilters,
   type FilterKey,
 } from "@/features/findings/finding-filters"
+import { FindingFormSheet } from "@/features/findings/finding-form-sheet"
 import { FindingListTable } from "@/features/findings/finding-list-table"
 import {
   parseSeverity,
   parseStale,
   parseStatus,
 } from "@/features/findings/filters"
+import { canWriteFindings } from "@/features/findings/permissions"
 import { useFindings } from "@/features/findings/use-findings"
 import { useProject } from "@/features/projects/use-project"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
@@ -111,6 +114,10 @@ export function ProjectFindingsPage() {
     ? "Nenhum achado encontrado com esse filtro."
     : "Nenhum achado ainda."
 
+  const { data: user } = useCurrentUser()
+  const canWrite = user ? canWriteFindings(user) : false
+  const [creating, setCreating] = useState(false)
+
   // Sem o projeto (não existe ou sem acesso), o resto da página não faz sentido.
   if (project.error) {
     return (
@@ -127,17 +134,25 @@ export function ProjectFindingsPage() {
 
   return (
     <div className="space-y-6 p-4 md:p-8">
-      <header className="space-y-1">
-        <Link
-          to={`/projects/${projectId}`}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
-        >
-          <ChevronLeft className="size-4" aria-hidden="true" />
-          Voltar para o projeto
-        </Link>
-        <h1 className="text-2xl font-semibold">Achados</h1>
-        {project.data && (
-          <p className="text-sm text-muted-foreground">{project.data.name}</p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <Link
+            to={`/projects/${projectId}`}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
+          >
+            <ChevronLeft className="size-4" aria-hidden="true" />
+            Voltar para o projeto
+          </Link>
+          <h1 className="text-2xl font-semibold">Achados</h1>
+          {project.data && (
+            <p className="text-sm text-muted-foreground">{project.data.name}</p>
+          )}
+        </div>
+        {canWrite && (
+          <Button onClick={() => setCreating(true)}>
+            <Plus data-icon="inline-start" />
+            Novo achado
+          </Button>
         )}
       </header>
 
@@ -207,6 +222,13 @@ export function ProjectFindingsPage() {
             </div>
           )}
         </div>
+      )}
+
+      {creating && (
+        <FindingFormSheet
+          projectId={projectId}
+          onClose={() => setCreating(false)}
+        />
       )}
     </div>
   )
