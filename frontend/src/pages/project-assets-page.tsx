@@ -1,14 +1,19 @@
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Pencil, Plus, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Link, useParams, useSearchParams } from "react-router"
 
 import { FormField } from "@/components/form-field"
 import { PaginationControls } from "@/components/pagination-controls"
 import { Button } from "@/components/ui/button"
+import { AssetFormSheet } from "@/features/assets/asset-form-sheet"
 import { AssetListTable } from "@/features/assets/asset-list-table"
 import { AssetTypeFilter } from "@/features/assets/asset-type-filter"
+import { DeleteAssetDialog } from "@/features/assets/delete-asset-dialog"
 import { ASSET_TYPES, type AssetType } from "@/features/assets/labels"
+import { canWriteAssets } from "@/features/assets/permissions"
+import type { Asset } from "@/features/assets/types"
 import { useAssets } from "@/features/assets/use-assets"
+import { useCurrentUser } from "@/features/auth/use-current-user"
 import { useProject } from "@/features/projects/use-project"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 
@@ -92,6 +97,37 @@ export function ProjectAssetsPage() {
       ? "Nenhum ativo encontrado com esse filtro."
       : "Nenhum ativo ainda."
 
+  const { data: user } = useCurrentUser()
+  const canWrite = user ? canWriteAssets(user) : false
+
+  // "new" abre o formulário de criação; um ativo abre o de edição.
+  const [editing, setEditing] = useState<Asset | "new" | null>(null)
+  const [deleting, setDeleting] = useState<Asset | null>(null)
+
+  // Leitor só consulta: sem coluna de ações.
+  const renderActions = canWrite
+    ? (asset: Asset) => (
+        <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Editar ${asset.name}`}
+            onClick={() => setEditing(asset)}
+          >
+            <Pencil />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Excluir ${asset.name}`}
+            onClick={() => setDeleting(asset)}
+          >
+            <Trash2 />
+          </Button>
+        </div>
+      )
+    : undefined
+
   // Sem o projeto (não existe ou sem acesso), o resto da página não faz sentido.
   if (project.error) {
     return (
@@ -108,17 +144,25 @@ export function ProjectAssetsPage() {
 
   return (
     <div className="space-y-6 p-4 md:p-8">
-      <header className="space-y-1">
-        <Link
-          to={`/projects/${projectId}`}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
-        >
-          <ChevronLeft className="size-4" aria-hidden="true" />
-          Voltar para o projeto
-        </Link>
-        <h1 className="text-2xl font-semibold">Ativos</h1>
-        {project.data && (
-          <p className="text-sm text-muted-foreground">{project.data.name}</p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <Link
+            to={`/projects/${projectId}`}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
+          >
+            <ChevronLeft className="size-4" aria-hidden="true" />
+            Voltar para o projeto
+          </Link>
+          <h1 className="text-2xl font-semibold">Ativos</h1>
+          {project.data && (
+            <p className="text-sm text-muted-foreground">{project.data.name}</p>
+          )}
+        </div>
+        {canWrite && (
+          <Button onClick={() => setEditing("new")}>
+            <Plus data-icon="inline-start" />
+            Novo ativo
+          </Button>
         )}
       </header>
 
@@ -170,7 +214,10 @@ export function ProjectAssetsPage() {
             </div>
           ) : (
             <>
-              <AssetListTable assets={data.data} />
+              <AssetListTable
+                assets={data.data}
+                renderActions={renderActions}
+              />
               <PaginationControls
                 page={data.meta.page}
                 totalPages={data.meta.totalPages}
@@ -179,6 +226,21 @@ export function ProjectAssetsPage() {
             </>
           )}
         </div>
+      )}
+
+      {editing && (
+        <AssetFormSheet
+          projectId={projectId}
+          asset={editing === "new" ? undefined : editing}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {deleting && (
+        <DeleteAssetDialog
+          projectId={projectId}
+          asset={deleting}
+          onClose={() => setDeleting(null)}
+        />
       )}
     </div>
   )
