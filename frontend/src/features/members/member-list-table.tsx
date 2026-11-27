@@ -1,3 +1,5 @@
+import type { ReactNode } from "react"
+
 import { ROLE_LABELS } from "@/features/auth/types"
 
 import type { Member } from "./types"
@@ -6,9 +8,14 @@ const dateFormat = new Intl.DateTimeFormat("pt-BR")
 
 type MemberListTableProps = {
   members: Member[]
+  // Sem isso, a tabela não tem coluna de ações.
+  renderActions?: (member: Member) => ReactNode
 }
 
-export function MemberListTable({ members }: MemberListTableProps) {
+export function MemberListTable({
+  members,
+  renderActions,
+}: MemberListTableProps) {
   return (
     <div className="overflow-x-auto rounded-xl border bg-card">
       <table className="w-full text-sm">
@@ -27,6 +34,11 @@ export function MemberListTable({ members }: MemberListTableProps) {
             <th scope="col" className="p-3 font-medium whitespace-nowrap">
               Entrou em
             </th>
+            {renderActions && (
+              <th scope="col" className="p-3">
+                <span className="sr-only">Ações</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -50,6 +62,11 @@ export function MemberListTable({ members }: MemberListTableProps) {
               <td className="p-3 whitespace-nowrap tabular-nums">
                 {dateFormat.format(new Date(member.joinedAt))}
               </td>
+              {renderActions && (
+                <td className="p-3 whitespace-nowrap">
+                  {renderActions(member)}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

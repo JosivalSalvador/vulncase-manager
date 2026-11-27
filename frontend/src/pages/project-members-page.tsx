@@ -1,9 +1,18 @@
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, LogOut, UserMinus, UserPlus } from "lucide-react"
+import { useState } from "react"
 import { Link, useParams, useSearchParams } from "react-router"
 
 import { PaginationControls } from "@/components/pagination-controls"
 import { Button } from "@/components/ui/button"
+import { useCurrentUser } from "@/features/auth/use-current-user"
+import { AddMemberSheet } from "@/features/members/add-member-sheet"
 import { MemberListTable } from "@/features/members/member-list-table"
+import {
+  canManageMembers,
+  canRemoveMember,
+} from "@/features/members/permissions"
+import { RemoveMemberDialog } from "@/features/members/remove-member-dialog"
+import type { Member } from "@/features/members/types"
 import { useMembers } from "@/features/members/use-members"
 import { useProject } from "@/features/projects/use-project"
 
@@ -42,6 +51,40 @@ export function ProjectMembersPage() {
   const isEmpty = data !== undefined && data.data.length === 0
   const outOfRange = isEmpty && data.meta.total > 0
 
+  const { data: user } = useCurrentUser()
+  const current = project.data
+  const canManage = user && current ? canManageMembers(user, current) : false
+
+  const [adding, setAdding] = useState(false)
+  // O membro que vai ser removido (ou o próprio usuário, se for sair).
+  const [removing, setRemoving] = useState<Member | null>(null)
+
+  // Só existe com a sessão e o projeto carregados. Cada linha mostra o botão que
+  // cabe a quem está logado: tirar outro membro ou sair do projeto.
+  const renderActions =
+    user && current
+      ? (member: Member) => {
+          if (!canRemoveMember(user, current, member)) return null
+
+          const leaving = member.userId === user.id
+
+          return (
+            <div className="flex justify-end">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={
+                  leaving ? "Sair do projeto" : `Remover ${member.fullname}`
+                }
+                onClick={() => setRemoving(member)}
+              >
+                {leaving ? <LogOut /> : <UserMinus />}
+              </Button>
+            </div>
+          )
+        }
+      : undefined
+
   // Sem o projeto (não existe ou sem acesso), o resto da página não faz sentido.
   if (project.error) {
     return (
@@ -58,17 +101,25 @@ export function ProjectMembersPage() {
 
   return (
     <div className="space-y-6 p-4 md:p-8">
-      <header className="space-y-1">
-        <Link
-          to={`/projects/${projectId}`}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
-        >
-          <ChevronLeft className="size-4" aria-hidden="true" />
-          Voltar para o projeto
-        </Link>
-        <h1 className="text-2xl font-semibold">Membros</h1>
-        {project.data && (
-          <p className="text-sm text-muted-foreground">{project.data.name}</p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <Link
+            to={`/projects/${projectId}`}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
+          >
+            <ChevronLeft className="size-4" aria-hidden="true" />
+            Voltar para o projeto
+          </Link>
+          <h1 className="text-2xl font-semibold">Membros</h1>
+          {project.data && (
+            <p className="text-sm text-muted-foreground">{project.data.name}</p>
+          )}
+        </div>
+        {canManage && (
+          <Button onClick={() => setAdding(true)}>
+            <UserPlus data-icon="inline-start" />
+            Adicionar membro
+          </Button>
         )}
       </header>
 
@@ -109,7 +160,10 @@ export function ProjectMembersPage() {
             </div>
           ) : (
             <>
-              <MemberListTable members={data.data} />
+              <MemberListTable
+                members={data.data}
+                renderActions={renderActions}
+              />
               <PaginationControls
                 page={data.meta.page}
                 totalPages={data.meta.totalPages}
@@ -118,6 +172,21 @@ export function ProjectMembersPage() {
             </>
           )}
         </div>
+      )}
+
+      {adding && (
+        <AddMemberSheet
+          projectId={projectId}
+          onClose={() => setAdding(false)}
+        />
+      )}
+      {removing && (
+        <RemoveMemberDialog
+          projectId={projectId}
+          member={removing}
+          leaving={removing.userId === user?.id}
+          onClose={() => setRemoving(null)}
+        />
       )}
     </div>
   )
