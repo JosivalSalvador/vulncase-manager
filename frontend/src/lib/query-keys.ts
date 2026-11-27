@@ -7,7 +7,8 @@ export const queryKeys = {
   projectList: (params: object) => ["projects", "list", params] as const,
   projectDetail: (id: string) => ["projects", "detail", id] as const,
   // Números que saem dos achados (painel, resumo): quem mexer em achado deve
-  // invalidar o prefixo ["projects", "numbers", id].
+  // invalidar o prefixo projectNumbers.
+  projectNumbers: (id: string) => ["projects", "numbers", id] as const,
   projectStats: (id: string) => ["projects", "numbers", id, "stats"] as const,
   projectSummary: (id: string) =>
     ["projects", "numbers", id, "summary"] as const,
@@ -24,5 +25,10 @@ export const queryKeys = {
   projectFindings: (id: string) => ["projects", "findings", id] as const,
   findingList: (id: string, params: object) =>
     ["projects", "findings", id, "list", params] as const,
+  // Fica fora do prefixo dos achados: salvar não pode refazer esta consulta com
+  // o formulário aberto, senão o achado novo apareceria como duplicata dele.
+  findingDuplicates: (id: string, params: object | null) =>
+    ["projects", "duplicates", id, params] as const,
   owaspCatalog: ["catalog", "owasp"] as const,
+  cweCatalog: ["catalog", "cwe"] as const,
 }

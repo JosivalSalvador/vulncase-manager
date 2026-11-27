@@ -2,7 +2,12 @@ import { api } from "@/lib/api"
 import type { Paginated } from "@/lib/pagination"
 
 import type { FindingStatus, Severity } from "./labels"
-import type { Finding } from "./types"
+import type {
+  CreatedFinding,
+  Finding,
+  FindingBody,
+  PossibleDuplicate,
+} from "./types"
 
 export type ListFindingsParams = {
   page?: number
@@ -30,4 +35,46 @@ export function listFindings(
     query: params,
     signal,
   })
+}
+
+export function createFinding(projectId: string, body: FindingBody) {
+  return api<CreatedFinding>(`/projects/${projectId}/findings`, {
+    method: "POST",
+    body,
+  })
+}
+
+export function updateFinding(
+  projectId: string,
+  findingId: string,
+  body: FindingBody,
+) {
+  return api<Finding>(`/projects/${projectId}/findings/${findingId}`, {
+    method: "PATCH",
+    body,
+  })
+}
+
+export function deleteFinding(projectId: string, findingId: string) {
+  return api(`/projects/${projectId}/findings/${findingId}`, {
+    method: "DELETE",
+  })
+}
+
+export type DuplicatesParams = {
+  title: string
+  assetId?: string
+  cwe?: string
+  cve?: string
+}
+
+export function listDuplicates(
+  projectId: string,
+  params: DuplicatesParams,
+  signal?: AbortSignal,
+) {
+  return api<{ data: PossibleDuplicate[] }>(
+    `/projects/${projectId}/findings/duplicates`,
+    { query: params, signal },
+  )
 }

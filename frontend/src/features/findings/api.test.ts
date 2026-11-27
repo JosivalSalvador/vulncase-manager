@@ -2,7 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { resetCsrfToken } from "@/lib/api"
 
-import { listFindings } from "./api"
+import {
+  createFinding,
+  deleteFinding,
+  listDuplicates,
+  listFindings,
+  updateFinding,
+} from "./api"
 
 const fetchMock = vi.fn<typeof fetch>()
 
@@ -33,6 +39,37 @@ const finding = {
   asset: { id: "a1", name: "Portal web", type: "WEB" },
   assignee: { id: "2", fullname: "Bruno Tavares" },
   reporter: { id: "1", fullname: "Ana Ribeiro" },
+}
+
+const body = {
+  title: finding.title,
+  description: finding.description,
+  severity: "CRITICAL" as const,
+  remediation: null,
+  owaspCategory: "A03:2021",
+  cwe: "CWE-89",
+  cve: null,
+  dueDate: "2026-12-01",
+  assetId: "a1",
+  assigneeId: "2",
+}
+
+// Nas escritas, a primeira chamada busca o token CSRF e a segunda é a de verdade.
+function mockWrite(response: Response) {
+  fetchMock
+    .mockResolvedValueOnce(json({ csrfToken: "tok" }))
+    .mockResolvedValueOnce(response)
+}
+
+function writeCall() {
+  const [url, init] = fetchMock.mock.calls[1] ?? []
+
+  return {
+    path: new URL(String(url)).pathname,
+    method: init?.method,
+    csrf: new Headers(init?.headers).get("X-CSRF-Token"),
+    body: init?.body ? (JSON.parse(String(init.body)) as unknown) : undefined,
+  }
 }
 
 beforeEach(() => {
@@ -100,5 +137,54 @@ describe("findings api", () => {
 
     const { searchParams } = new URL(String(fetchMock.mock.calls[0]?.[0]))
     expect([...searchParams.keys()]).toEqual(["page"])
+  })
+
+  it("createFinding faz POST com CSRF e devolve os parecidos", async () => {
+    mockWrite(json({ ...finding, possibleDuplicates: [] }, 201))
+
+    await expect(createFinding("p1", body)).resolves.toEqual({
+      ...finding,
+      possibleDuplicates: [],
+    })
+    expect(writeCall()).toEqual({
+      path: "/projects/p1/findings",
+      method: "POST",
+      csrf: "tok",
+      body,
+    })
+  })
+
+  it("updateFinding faz PATCH no achado", async () => {
+    mockWrite(json(finding))
+
+    await updateFinding("p1", "f1", body)
+
+    expect(writeCall()).toEqual({
+      path: "/projects/p1/findings/f1",
+      method: "PATCH",
+      csrf: "tok",
+      body,
+    })
+  })
+
+  it("deleteFinding faz DELETE e aceita o 204", async () => {
+    mockWrite(new Response(null, { status: 204 }))
+
+    await expect(deleteFinding("p1", "f1")).resolves.toBeUndefined()
+    expect(writeCall()).toMatchObject({
+      path: "/projects/p1/findings/f1",
+      method: "DELETE",
+      csrf: "tok",
+    })
+  })
+
+  it("listDuplicates manda só o que foi informado", async () => {
+    fetchMock.mockResolvedValueOnce(json({ data: [] }))
+
+    await listDuplicates("p1", { title: "SQL no login", assetId: undefined })
+
+    const url = new URL(String(fetchMock.mock.calls[0]?.[0]))
+    expect(url.pathname).toBe("/projects/p1/findings/duplicates")
+    expect([...url.searchParams.keys()]).toEqual(["title"])
   })
 })

@@ -7,3 +7,10 @@ export type OwaspEntry = {
   // Tradução para exibição.
   namePt: string
 }
+
+// Resposta do GET /catalog/cwe.
+export type CweEntry = {
+  code: string
+  // Título oficial, em inglês.
+  name: string
+}
