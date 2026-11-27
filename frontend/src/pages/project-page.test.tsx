@@ -221,6 +221,7 @@ describe("painel do projeto", () => {
       await screen.findByRole("list", { name: "Por status" }),
     ).toBeInTheDocument()
   })
+
   it("leva para os ativos do projeto", async () => {
     respond()
 
@@ -230,6 +231,16 @@ describe("painel do projeto", () => {
       "href",
       "/projects/p1/assets",
     )
+  })
+
+  it("leva para os membros do projeto", async () => {
+    respond()
+
+    renderAt("/projects/p1")
+
+    expect(
+      await screen.findByRole("link", { name: "Membros" }),
+    ).toHaveAttribute("href", "/projects/p1/members")
   })
 })
 

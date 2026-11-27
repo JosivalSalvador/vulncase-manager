@@ -7,6 +7,7 @@ import { DashboardPage } from "@/pages/dashboard-page"
 import { ProjectsPage } from "@/pages/projects-page"
 import { ProjectPage } from "@/pages/project-page"
 import { ProjectAssetsPage } from "@/pages/project-assets-page"
+import { ProjectMembersPage } from "@/pages/project-members-page"
 import { AdminUsersPage } from "@/pages/placeholders"
 
 import { AppLayout } from "./app-layout"
@@ -32,6 +33,10 @@ export const routes: RouteObject[] = [
           {
             path: "/projects/:projectId/assets",
             element: <ProjectAssetsPage />,
+          },
+          {
+            path: "/projects/:projectId/members",
+            element: <ProjectMembersPage />,
           },
           {
             element: <RequireRole roles={["ADMIN"]} />,

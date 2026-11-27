@@ -60,6 +60,12 @@ export function ProjectPage() {
           >
             Ativos
           </Link>
+          <Link
+            to={`/projects/${projectId}/members`}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Membros
+          </Link>
           <ReportDownloads projectId={projectId} />
         </div>
       </header>
