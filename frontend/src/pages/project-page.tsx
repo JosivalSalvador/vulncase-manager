@@ -55,6 +55,12 @@ export function ProjectPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
+            to={`/projects/${projectId}/findings`}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Achados
+          </Link>
+          <Link
             to={`/projects/${projectId}/assets`}
             className={buttonVariants({ variant: "outline" })}
           >

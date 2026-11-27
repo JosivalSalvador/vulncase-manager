@@ -7,6 +7,7 @@ import { DashboardPage } from "@/pages/dashboard-page"
 import { ProjectsPage } from "@/pages/projects-page"
 import { ProjectPage } from "@/pages/project-page"
 import { ProjectAssetsPage } from "@/pages/project-assets-page"
+import { ProjectFindingsPage } from "@/pages/project-findings-page"
 import { ProjectMembersPage } from "@/pages/project-members-page"
 import { AdminUsersPage } from "@/pages/placeholders"
 
@@ -30,6 +31,10 @@ export const routes: RouteObject[] = [
           { path: "/", element: <DashboardPage /> },
           { path: "/projects", element: <ProjectsPage /> },
           { path: "/projects/:projectId", element: <ProjectPage /> },
+          {
+            path: "/projects/:projectId/findings",
+            element: <ProjectFindingsPage />,
+          },
           {
             path: "/projects/:projectId/assets",
             element: <ProjectAssetsPage />,
