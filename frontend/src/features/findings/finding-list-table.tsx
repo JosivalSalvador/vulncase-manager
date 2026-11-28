@@ -1,12 +1,19 @@
+import type { ReactNode } from "react"
+
 import { SeverityBadge, StatusBadge } from "./badges"
 import { formatDueDate, isOverdue } from "./due-date"
 import type { Finding } from "./types"
 
 type FindingListTableProps = {
   findings: Finding[]
+  // Sem isso, a tabela não tem coluna de ações (quem só lê).
+  renderActions?: (finding: Finding) => ReactNode
 }
 
-export function FindingListTable({ findings }: FindingListTableProps) {
+export function FindingListTable({
+  findings,
+  renderActions,
+}: FindingListTableProps) {
   return (
     <div className="overflow-x-auto rounded-xl border bg-card">
       <table className="w-full text-sm">
@@ -31,6 +38,11 @@ export function FindingListTable({ findings }: FindingListTableProps) {
             <th scope="col" className="p-3 font-medium whitespace-nowrap">
               Prazo
             </th>
+            {renderActions && (
+              <th scope="col" className="p-3">
+                <span className="sr-only">Ações</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -70,6 +82,11 @@ export function FindingListTable({ findings }: FindingListTableProps) {
                   </span>
                 )}
               </td>
+              {renderActions && (
+                <td className="p-3 whitespace-nowrap">
+                  {renderActions(finding)}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

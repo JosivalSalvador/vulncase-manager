@@ -1,4 +1,4 @@
-import { ChevronLeft, Plus } from "lucide-react"
+import { ChevronLeft, Pencil, Plus, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Link, useParams, useSearchParams } from "react-router"
 
@@ -6,6 +6,7 @@ import { FormField } from "@/components/form-field"
 import { PaginationControls } from "@/components/pagination-controls"
 import { Button } from "@/components/ui/button"
 import { useCurrentUser } from "@/features/auth/use-current-user"
+import { DeleteFindingDialog } from "@/features/findings/delete-finding-dialog"
 import {
   FindingFilters,
   type FilterKey,
@@ -17,7 +18,11 @@ import {
   parseStale,
   parseStatus,
 } from "@/features/findings/filters"
-import { canWriteFindings } from "@/features/findings/permissions"
+import {
+  canDeleteFinding,
+  canWriteFindings,
+} from "@/features/findings/permissions"
+import type { Finding } from "@/features/findings/types"
 import { useFindings } from "@/features/findings/use-findings"
 import { useProject } from "@/features/projects/use-project"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
@@ -116,7 +121,37 @@ export function ProjectFindingsPage() {
 
   const { data: user } = useCurrentUser()
   const canWrite = user ? canWriteFindings(user) : false
-  const [creating, setCreating] = useState(false)
+  // "new" abre o formulário de criação; um achado abre o de edição.
+  const [editing, setEditing] = useState<Finding | "new" | null>(null)
+  const [deleting, setDeleting] = useState<Finding | null>(null)
+
+  // Leitor só consulta: sem coluna de ações.
+  const renderActions = canWrite
+    ? (finding: Finding) => (
+        <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Editar ${finding.title}`}
+            onClick={() => setEditing(finding)}
+          >
+            <Pencil />
+          </Button>
+          {user &&
+            project.data &&
+            canDeleteFinding(user, project.data, finding) && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Excluir ${finding.title}`}
+                onClick={() => setDeleting(finding)}
+              >
+                <Trash2 />
+              </Button>
+            )}
+        </div>
+      )
+    : undefined
 
   // Sem o projeto (não existe ou sem acesso), o resto da página não faz sentido.
   if (project.error) {
@@ -149,7 +184,7 @@ export function ProjectFindingsPage() {
           )}
         </div>
         {canWrite && (
-          <Button onClick={() => setCreating(true)}>
+          <Button onClick={() => setEditing("new")}>
             <Plus data-icon="inline-start" />
             Novo achado
           </Button>
@@ -213,7 +248,10 @@ export function ProjectFindingsPage() {
               <p className="text-sm text-muted-foreground">
                 {data.meta.total} {data.meta.total === 1 ? "achado" : "achados"}
               </p>
-              <FindingListTable findings={data.data} />
+              <FindingListTable
+                findings={data.data}
+                renderActions={renderActions}
+              />
               <PaginationControls
                 page={data.meta.page}
                 totalPages={data.meta.totalPages}
@@ -224,10 +262,18 @@ export function ProjectFindingsPage() {
         </div>
       )}
 
-      {creating && (
+      {editing && (
         <FindingFormSheet
           projectId={projectId}
-          onClose={() => setCreating(false)}
+          finding={editing === "new" ? undefined : editing}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {deleting && (
+        <DeleteFindingDialog
+          projectId={projectId}
+          finding={deleting}
+          onClose={() => setDeleting(null)}
         />
       )}
     </div>

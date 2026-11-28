@@ -16,6 +16,16 @@ function refreshAssets(queryClient: QueryClient, projectId: string) {
   })
 }
 
+// Os achados mostram o nome do ativo, e ficam sem ele quando é excluído.
+function refreshAssetsAndFindings(queryClient: QueryClient, projectId: string) {
+  return Promise.all([
+    refreshAssets(queryClient, projectId),
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.projectFindings(projectId),
+    }),
+  ])
+}
+
 export function useCreateAsset(projectId: string) {
   const queryClient = useQueryClient()
 
@@ -31,7 +41,7 @@ export function useUpdateAsset(projectId: string) {
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: AssetBody }) =>
       updateAsset(projectId, id, body),
-    onSuccess: () => refreshAssets(queryClient, projectId),
+    onSuccess: () => refreshAssetsAndFindings(queryClient, projectId),
   })
 }
 
@@ -40,6 +50,6 @@ export function useDeleteAsset(projectId: string) {
 
   return useMutation({
     mutationFn: (id: string) => deleteAsset(projectId, id),
-    onSuccess: () => refreshAssets(queryClient, projectId),
+    onSuccess: () => refreshAssetsAndFindings(queryClient, projectId),
   })
 }

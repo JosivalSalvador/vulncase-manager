@@ -41,13 +41,20 @@ export function useAddMember(projectId: string) {
   })
 }
 
-// Tirar outra pessoa do projeto (dono ou ADMIN).
+// Tirar outra pessoa do projeto (dono ou ADMIN). Os achados dela ficam sem
+// responsável, então as listas de achados também mudam.
 export function useRemoveMember(projectId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (userId: string) => removeMember(projectId, userId),
-    onSuccess: () => refreshMembers(queryClient, projectId),
+    onSuccess: () =>
+      Promise.all([
+        refreshMembers(queryClient, projectId),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.projectFindings(projectId),
+        }),
+      ]),
   })
 }
 
